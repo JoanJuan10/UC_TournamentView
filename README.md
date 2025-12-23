@@ -4,18 +4,35 @@ Plugin para [UnderScript](https://github.com/UCProjects/UnderScript) que moderni
 
 ## 📋 Descripción
 
-**UC_TournamentView** es un plugin en desarrollo para [UnderScript](https://github.com/UCProjects/UnderScript) que transformará la página de espectador (`/Spectate`) de Undercards en una experiencia visual moderna inspirada en transmisiones de esports.
+**UC_TournamentView** es un plugin para [UnderScript](https://github.com/UCProjects/UnderScript) que transforma la página de espectador (`/Spectate`) de Undercards en una experiencia visual moderna inspirada en transmisiones de esports.
 
-### Estado actual: Fase inicial 🚧
+### Estado actual: Beta funcional 🎮
 
-El plugin actualmente se encuentra en su fase de desarrollo inicial. Por ahora solo se registra correctamente en UnderScript sin funcionalidades activas. Estamos construyendo la base técnica siguiendo las mejores prácticas de integración con UnderScript.
+El plugin cuenta con un overlay completo y funcional que muestra toda la información relevante de las partidas en tiempo real. El sistema básico está implementado y operativo.
+
+### Características implementadas:
+
+- ✅ **Overlay de información en tiempo real**
+  - Nombres de jugadores
+  - HP con barras visuales dinámicas
+  - Oro actual
+  - Almas (con imágenes)
+  - Artefactos (con imágenes y contadores)
+  - Cartas en mano, mazo y cementerio
+  - Turno actual y timer en formato M:SS
+  - Indicador visual de jugador activo
+
+- ✅ **Sistema de plantillas base** - Estructura CSS con variables personalizables
+- ✅ **Extracción de datos del DOM** - Lectura robusta de almas, artefactos y contadores
+- ✅ **Overlay de resultados** - Pantalla de victoria/derrota con estadísticas
+- ✅ **Settings funcional** - Activar/desactivar el plugin correctamente
 
 ### Características planeadas:
 
-- 🎨 **Sistema de plantillas intercambiables** - Personaliza completamente la apariencia
 - 📦 **Importar/Exportar plantillas** - Comparte tus diseños en formato JSON + CSS
-- 🎮 **Plantilla "Esports Moderno"** - Diseño profesional listo para usar
-- ⚙️ **Configuración flexible** - Ajusta cada detalle desde el panel de settings
+- 🎨 **Plantillas adicionales** - Múltiples estilos visuales
+- 🎬 **Animaciones mejoradas** - Transiciones y efectos visuales
+- ⚙️ **Configuración avanzada** - Personalización granular de elementos
 
 ## 🔧 Requisitos
 
@@ -30,17 +47,16 @@ El plugin actualmente se encuentra en su fase de desarrollo inicial. Por ahora s
 
 ## 📥 Instalación
 
-### ⚠️ Nota importante
-Este plugin está actualmente en **desarrollo temprano**. Solo se registra en UnderScript sin funcionalidades activas. No es recomendable instalarlo aún a menos que quieras seguir el desarrollo.
+### Para Usuarios Finales
 
-### Para Usuarios Finales (Pendiente)
-
-Cuando el plugin esté listo para usuarios finales, simplemente:
+El plugin está en beta funcional y puede usarse para ver partidas en Spectate:
 
 1. Instala [TamperMonkey](https://www.tampermonkey.net/)
 2. Instala [UnderScript](https://github.com/UCProjects/UnderScript/releases/latest/download/undercards.user.js)
-3. Descarga el plugin desde [Releases](https://github.com/JoanJuan10/UC_TournamentView/releases)
+3. Descarga el plugin desde [Releases](https://github.com/JoanJuan10/UC_TournamentView/releases) (o usa `dist/tournamentview.user.js`)
 4. TamperMonkey detectará el archivo `.user.js` automáticamente
+5. Navega a una partida en modo Spectate en Undercards.net
+6. Verás el overlay automáticamente (si está activado en settings)
 
 ### Para Desarrolladores
 
@@ -86,21 +102,24 @@ Esto ejecutará webpack en modo watch. Cada vez que guardes cambios en `src/inde
 
 ## ⚙️ Configuración
 
-### Estado actual
-Por ahora, el plugin solo incluye un setting básico de activación/desactivación. No hay funcionalidades implementadas aún.
+El plugin incluye un sistema de configuración funcional accesible desde el menú de UnderScript.
 
 Accede a la configuración del plugin desde:
 - **Menú de UnderScript** → Plugins → TournamentView
 
 ### Opciones disponibles:
-- ✅ Activar/Desactivar Tournament View
+- ✅ **Activar/Desactivar Tournament View** - Control completo del plugin
+  - Al desactivar se remueve completamente el overlay y CSS
+  - Al activar se inicializa automáticamente en páginas de Spectate
+  - El estado persiste entre recargas de página
 
 ### Próximamente:
 - Seleccionar plantilla activa
 - Importar plantilla (JSON)
 - Exportar plantilla actual
 - Personalizar colores y posiciones
-- Activar/desactivar elementos del overlay
+- Activar/desactivar elementos individuales del overlay
+- Ajustar tamaños de fuentes y elementos
 
 ## 🛠️ Desarrollo
 
@@ -165,27 +184,45 @@ Este proyecto sigue el [template oficial de UCProjects](https://github.com/UCPro
 - [x] Configuración de webpack y build system
 - [x] Registro básico del plugin en UnderScript
 
-### Fase 2 - Sistema de Plantillas 🚧 (Siguiente)
-- [ ] Sistema de plantillas (JSON + CSS)
-- [ ] Módulo de estado del juego (GameState)
-- [ ] Manejadores de eventos
-- [ ] Inyección de CSS dinámico
+### Fase 2 - Sistema de Plantillas y UI ✅ (Completado)
+- [x] Sistema de plantillas (JSON + CSS con variables)
+- [x] Módulo de estado del juego (GameState)
+- [x] Manejadores de eventos completos
+- [x] Inyección y remoción de CSS dinámico
+- [x] UI Manager con overlay funcional:
+  - [x] Header con información de jugadores
+  - [x] HP con barras visuales
+  - [x] Oro, almas y artefactos
+  - [x] Contador de cartas (mano, mazo, cementerio)
+  - [x] Turno actual y timer (M:SS)
+  - [x] Indicador visual de jugador activo
+  - [x] Overlay de resultados (victoria/derrota)
+- [x] Extracción de datos del DOM:
+  - [x] Almas desde elementos `<img>`
+  - [x] Artefactos con contadores desde `.artifact-custom`
+  - [x] Cementerio desde `.dust-counter` (índices invertidos)
+- [x] Settings funcional con activar/desactivar
+- [x] Timer sincronizado con `window.global('time')`
 
-### Fase 3 - Plantilla Esports (Pendiente)
-- [ ] Overlay de información de jugadores
-- [ ] Marcadores estilizados (HP, oro, cartas)
+### Fase 3 - Mejoras Visuales 🚧 (En progreso)
+- [ ] Animaciones de transición suaves
+- [ ] Efectos visuales para eventos importantes
 - [ ] Panel de historial de acciones
-- [ ] Animaciones de eventos (victoria, derrota, jugadas)
+- [ ] Mejoras en responsive design
+- [ ] Temas de color alternativos
 
 ### Fase 4 - Gestión de Plantillas (Pendiente)
-- [ ] Importar/Exportar plantillas
-- [ ] Editor visual de plantillas
+- [ ] Importar/Exportar plantillas personalizadas
+- [ ] Editor visual de plantillas en settings
+- [ ] Múltiples plantillas predefinidas
 - [ ] Galería de plantillas comunitarias
+- [ ] Validación y preview de plantillas
 
 ### Fase 5 - Integraciones (Futuro)
 - [ ] Soporte para Challonge
 - [ ] Integración con sistemas de torneo
 - [ ] Exportación de datos de partida
+- [ ] API para extensiones de terceros
 
 ## 🤝 Contribuir
 

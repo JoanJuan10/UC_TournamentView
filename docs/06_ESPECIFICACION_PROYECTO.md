@@ -1,6 +1,10 @@
 # 06 - Especificación del Proyecto UC_TournamentView
 
+> Actualizado: 24 de diciembre de 2025 - Estado: Beta Funcional
+
 Especificación técnica completa del plugin UC_TournamentView, incluyendo arquitectura, sistema de plantillas y diseño de la plantilla "Esports Moderno".
+
+**⚠️ Nota**: Este documento describe la especificación original del proyecto. Para ver el estado actual de implementación, consulta [08_ESTADO_ACTUAL.md](08_ESTADO_ACTUAL.md).
 
 ## 📋 Índice
 
@@ -22,19 +26,38 @@ Especificación técnica completa del plugin UC_TournamentView, incluyendo arqui
 
 Transformar la página de espectador (`/Spectate?gameId=XXX&playerId=YYY`) de Undercards en una experiencia visual moderna estilo transmisión de esports profesional.
 
+### Estado Actual
+
+✅ **Beta Funcional**: El overlay básico está completamente implementado y operativo. Ver [08_ESTADO_ACTUAL.md](08_ESTADO_ACTUAL.md) para detalles completos.
+
+**Implementado**:
+- ✅ Overlay de información en tiempo real
+- ✅ Sistema de plantillas con CSS variables
+- ✅ Extracción de datos del DOM
+- ✅ Settings funcional (activar/desactivar)
+- ✅ Timer sincronizado
+- ✅ Indicador de turno activo
+- ✅ Overlay de resultados
+
+**Pendiente**:
+- 📦 Importar/Exportar plantillas (Fase 4)
+- 🎨 Múltiples plantillas predefinidas (Fase 4)
+- 🎬 Animaciones mejoradas (Fase 3)
+- ⚙️ Editor visual de plantillas (Fase 4)
+
 ### Alcance
 
 | Incluido | No Incluido (Por ahora) |
 |----------|-------------------------|
 | ✅ Vista Spectate | ❌ Vista Game (jugador) |
 | ✅ Overlays visuales | ❌ Modificar mecánicas |
-| ✅ Sistema de plantillas | ❌ Integración con torneos externos |
-| ✅ Importar/Exportar plantillas | ❌ Streaming directo |
+| ✅ Sistema de plantillas base | ❌ Integración con torneos externos |
+| 📦 Importar/Exportar plantillas (futuro) | ❌ Streaming directo |
 | ✅ Información existente en la web | ❌ Datos externos |
 
 ### Requisitos Técnicos
 
-- **Dependencia**: UnderScript (cargado vía `@require`)
+- **Dependencia**: UnderScript v0.63.9+ (cargado vía `@require`)
 - **Compatibilidad**: Navegadores modernos con TamperMonkey
 - **Almacenamiento**: localStorage (vía UnderScript settings)
 - **Sin dependencias externas adicionales**

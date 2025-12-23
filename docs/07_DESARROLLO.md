@@ -1,6 +1,8 @@
 # 07 - Guía de Desarrollo
 
-Guía completa para desarrollar plugins de UnderScript usando el template oficial con webpack.
+> Actualizado: 24 de diciembre de 2025
+
+Guía completa para desarrollar plugins de UnderScript usando el template oficial con webpack, basada en la experiencia real de desarrollar UC_TournamentView.
 
 ## 📋 Índice
 
@@ -517,8 +519,10 @@ npm install
 1. ✅ Configuración básica completa
 2. 📖 Lee [02_UNDERSCRIPT_PLUGIN_API.md](02_UNDERSCRIPT_PLUGIN_API.md) para entender la API
 3. 🎮 Lee [03_EVENTOS_JUEGO.md](03_EVENTOS_JUEGO.md) para eventos del juego
-4. 🎨 Implementa tu primera funcionalidad
-5. 🚀 Comparte tu plugin con la comunidad
+4. 📚 Revisa [08_ESTADO_ACTUAL.md](08_ESTADO_ACTUAL.md) para ver el estado del proyecto
+5. 💡 Lee [09_LECCIONES_APRENDIDAS.md](09_LECCIONES_APRENDIDAS.md) para tips y mejores prácticas
+6. 🎨 Implementa tu primera funcionalidad
+7. 🚀 Comparte tu plugin con la comunidad
 
 ---
 
@@ -528,6 +532,7 @@ npm install
 - [UnderScript GitHub](https://github.com/UCProjects/UnderScript)
 - [Webpack Documentation](https://webpack.js.org/)
 - [TamperMonkey Documentation](https://www.tampermonkey.net/documentation.php)
+- [UC_TournamentView Source Code](https://github.com/JoanJuan10/UC_TournamentView) - Ejemplo completo
 
 ---
 
