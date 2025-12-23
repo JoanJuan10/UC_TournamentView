@@ -667,7 +667,7 @@ Todos los mensajes se prefijan automáticamente con el nombre del plugin:
 
 - [UnderScript Plugin API](https://feildmaster.github.io/UnderScript/api/underscript/plugin)
 - [UnderScript Feature API](https://feildmaster.github.io/UnderScript/feature/api)
-- [Código fuente de UnderScript](docs/underscript.js)
+- [Código fuente de UnderScript](underscript.js)
 
 ---
 
