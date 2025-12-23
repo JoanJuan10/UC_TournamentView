@@ -1,0 +1,274 @@
+# Canon Consistency Check
+# Verifica que la documentación del proyecto sea consistente y esté actualizada
+
+name: Canon Consistency Check
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'docs/**'
+      - 'README.md'
+      - 'src/**'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'docs/**'
+      - 'README.md'
+      - 'src/**'
+  workflow_dispatch:
+
+jobs:
+  canon-check:
+    name: Verificar Consistencia del Canon
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repositorio
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Verificar estructura de documentación
+        id: structure-check
+        run: |
+          echo "📁 Verificando estructura de archivos..."
+          
+          REQUIRED_FILES=(
+            "README.md"
+            "docs/01_TAMPERMONKEY.md"
+            "docs/02_UNDERSCRIPT_PLUGIN_API.md"
+            "docs/03_EVENTOS_JUEGO.md"
+            "docs/04_VARIABLES_GLOBALES.md"
+            "docs/05_LIBRERIAS_INCLUIDAS.md"
+            "docs/06_ESPECIFICACION_PROYECTO.md"
+          )
+          
+          MISSING_FILES=()
+          
+          for file in "${REQUIRED_FILES[@]}"; do
+            if [ ! -f "$file" ]; then
+              MISSING_FILES+=("$file")
+              echo "❌ Falta: $file"
+            else
+              echo "✅ Existe: $file"
+            fi
+          done
+          
+          if [ ${#MISSING_FILES[@]} -gt 0 ]; then
+            echo "::error::Faltan ${#MISSING_FILES[@]} archivo(s) de documentación requeridos"
+            exit 1
+          fi
+          
+          echo "✅ Todos los archivos de documentación existen"
+
+      - name: Verificar enlaces internos en documentación
+        id: links-check
+        run: |
+          echo "🔗 Verificando enlaces internos..."
+          
+          BROKEN_LINKS=()
+          
+          # Función para verificar enlaces markdown
+          check_links() {
+            local file=$1
+            echo "Analizando: $file"
+            
+            # Extraer enlaces markdown [texto](ruta)
+            # Filtrar URLs externas (http://, https://)
+            links=$(grep -oP '\[.*?\]\(\K[^)]+(?=\))' "$file" 2>/dev/null | grep -v '^http' | grep -v '^#' || true)
+            
+            for link in $links; do
+              # Limpiar el enlace (quitar anclas #)
+              clean_link=$(echo "$link" | sed 's/#.*//')
+              
+              if [ -n "$clean_link" ]; then
+                # Resolver ruta relativa desde el directorio del archivo
+                dir=$(dirname "$file")
+                target="$dir/$clean_link"
+                
+                # Normalizar la ruta
+                target=$(realpath -m "$target" 2>/dev/null || echo "$target")
+                
+                if [ ! -f "$target" ]; then
+                  echo "❌ Enlace roto en $file: $link -> $target"
+                  BROKEN_LINKS+=("$file: $link")
+                fi
+              fi
+            done
+          }
+          
+          # Verificar README.md
+          check_links "README.md"
+          
+          # Verificar todos los .md en docs/
+          for doc in docs/*.md; do
+            if [ -f "$doc" ]; then
+              check_links "$doc"
+            fi
+          done
+          
+          if [ ${#BROKEN_LINKS[@]} -gt 0 ]; then
+            echo "::error::Se encontraron ${#BROKEN_LINKS[@]} enlace(s) roto(s)"
+            exit 1
+          fi
+          
+          echo "✅ Todos los enlaces internos son válidos"
+
+      - name: Verificar índice en README.md
+        id: index-check
+        run: |
+          echo "📋 Verificando que el README incluya todos los documentos..."
+          
+          MISSING_REFS=()
+          
+          # Documentos que deben estar referenciados en README.md
+          DOCS=(
+            "01_TAMPERMONKEY.md"
+            "02_UNDERSCRIPT_PLUGIN_API.md"
+            "03_EVENTOS_JUEGO.md"
+            "04_VARIABLES_GLOBALES.md"
+            "05_LIBRERIAS_INCLUIDAS.md"
+            "06_ESPECIFICACION_PROYECTO.md"
+          )
+          
+          for doc in "${DOCS[@]}"; do
+            if ! grep -q "$doc" README.md; then
+              MISSING_REFS+=("$doc")
+              echo "❌ No referenciado en README: $doc"
+            else
+              echo "✅ Referenciado: $doc"
+            fi
+          done
+          
+          if [ ${#MISSING_REFS[@]} -gt 0 ]; then
+            echo "::warning::${#MISSING_REFS[@]} documento(s) no están referenciados en README.md"
+          fi
+          
+          echo "✅ Verificación de índice completada"
+
+      - name: Verificar navegación entre documentos
+        id: navigation-check
+        run: |
+          echo "🧭 Verificando navegación secuencial..."
+          
+          NAVIGATION_ISSUES=()
+          
+          # Verificar que cada doc tenga enlaces al anterior y siguiente
+          declare -A NAV_PREV
+          declare -A NAV_NEXT
+          
+          NAV_PREV["02_UNDERSCRIPT_PLUGIN_API.md"]="01_TAMPERMONKEY.md"
+          NAV_PREV["03_EVENTOS_JUEGO.md"]="02_UNDERSCRIPT_PLUGIN_API.md"
+          NAV_PREV["04_VARIABLES_GLOBALES.md"]="03_EVENTOS_JUEGO.md"
+          NAV_PREV["05_LIBRERIAS_INCLUIDAS.md"]="04_VARIABLES_GLOBALES.md"
+          NAV_PREV["06_ESPECIFICACION_PROYECTO.md"]="05_LIBRERIAS_INCLUIDAS.md"
+          
+          NAV_NEXT["01_TAMPERMONKEY.md"]="02_UNDERSCRIPT_PLUGIN_API.md"
+          NAV_NEXT["02_UNDERSCRIPT_PLUGIN_API.md"]="03_EVENTOS_JUEGO.md"
+          NAV_NEXT["03_EVENTOS_JUEGO.md"]="04_VARIABLES_GLOBALES.md"
+          NAV_NEXT["04_VARIABLES_GLOBALES.md"]="05_LIBRERIAS_INCLUIDAS.md"
+          NAV_NEXT["05_LIBRERIAS_INCLUIDAS.md"]="06_ESPECIFICACION_PROYECTO.md"
+          
+          for doc in docs/*.md; do
+            if [ -f "$doc" ]; then
+              filename=$(basename "$doc")
+              
+              # Verificar enlace al documento anterior
+              if [ -n "${NAV_PREV[$filename]}" ]; then
+                if ! grep -q "${NAV_PREV[$filename]}" "$doc"; then
+                  echo "⚠️ $filename no tiene enlace a documento anterior: ${NAV_PREV[$filename]}"
+                  NAVIGATION_ISSUES+=("$filename: falta enlace a ${NAV_PREV[$filename]}")
+                fi
+              fi
+              
+              # Verificar enlace al documento siguiente
+              if [ -n "${NAV_NEXT[$filename]}" ]; then
+                if ! grep -q "${NAV_NEXT[$filename]}" "$doc"; then
+                  echo "⚠️ $filename no tiene enlace a documento siguiente: ${NAV_NEXT[$filename]}"
+                  NAVIGATION_ISSUES+=("$filename: falta enlace a ${NAV_NEXT[$filename]}")
+                fi
+              fi
+            fi
+          done
+          
+          if [ ${#NAVIGATION_ISSUES[@]} -gt 0 ]; then
+            echo "::warning::Se encontraron ${#NAVIGATION_ISSUES[@]} problema(s) de navegación"
+          else
+            echo "✅ Navegación entre documentos correcta"
+          fi
+
+      - name: Verificar consistencia de versiones
+        id: version-check
+        run: |
+          echo "🏷️ Verificando consistencia de versiones..."
+          
+          # Buscar versiones mencionadas en la documentación
+          echo "Versiones de UnderScript encontradas:"
+          grep -rh "UnderScript.*[0-9]\+\.[0-9]\+\.[0-9]\+" docs/ README.md 2>/dev/null | head -5 || true
+          
+          echo "Versiones del plugin encontradas:"
+          grep -rh "TournamentView.*[0-9]\+\.[0-9]\+\.[0-9]\+" docs/ README.md 2>/dev/null | head -5 || true
+          
+          # Verificar que el archivo principal del script (si existe) tenga versión consistente
+          if [ -f "src/tournamentview.user.js" ]; then
+            SCRIPT_VERSION=$(grep -oP '@version\s+\K[0-9]+\.[0-9]+\.[0-9]+' src/tournamentview.user.js || echo "no encontrada")
+            echo "Versión en script: $SCRIPT_VERSION"
+          fi
+          
+          echo "✅ Verificación de versiones completada"
+
+      - name: Verificar formato Markdown
+        id: markdown-check
+        run: |
+          echo "📝 Verificando formato Markdown básico..."
+          
+          FORMAT_ISSUES=()
+          
+          for doc in README.md docs/*.md; do
+            if [ -f "$doc" ]; then
+              # Verificar que tenga título H1
+              if ! head -20 "$doc" | grep -q '^# '; then
+                echo "⚠️ $doc no tiene título H1 al inicio"
+                FORMAT_ISSUES+=("$doc: sin título H1")
+              fi
+              
+              # Verificar que no haya líneas muy largas (>500 caracteres, excluyendo URLs)
+              LONG_LINES=$(grep -n '.\{500\}' "$doc" | grep -v 'http' | wc -l)
+              if [ "$LONG_LINES" -gt 0 ]; then
+                echo "⚠️ $doc tiene $LONG_LINES línea(s) muy larga(s)"
+              fi
+              
+              # Verificar encoding UTF-8
+              if file "$doc" | grep -qv 'UTF-8\|ASCII'; then
+                echo "⚠️ $doc puede tener problemas de encoding"
+                FORMAT_ISSUES+=("$doc: encoding incorrecto")
+              fi
+            fi
+          done
+          
+          if [ ${#FORMAT_ISSUES[@]} -gt 0 ]; then
+            echo "::warning::Se encontraron ${#FORMAT_ISSUES[@]} problema(s) de formato"
+          else
+            echo "✅ Formato Markdown correcto"
+          fi
+
+      - name: Generar resumen
+        if: always()
+        run: |
+          echo "## 📊 Resumen del Canon Check" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Verificación | Estado |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Estructura de archivos | ${{ steps.structure-check.outcome == 'success' && '✅ Pasó' || '❌ Falló' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Enlaces internos | ${{ steps.links-check.outcome == 'success' && '✅ Pasó' || '❌ Falló' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Índice README | ${{ steps.index-check.outcome == 'success' && '✅ Pasó' || '⚠️ Advertencias' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Navegación | ${{ steps.navigation-check.outcome == 'success' && '✅ Pasó' || '⚠️ Advertencias' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Versiones | ${{ steps.version-check.outcome == 'success' && '✅ Pasó' || '⚠️ Advertencias' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Formato Markdown | ${{ steps.markdown-check.outcome == 'success' && '✅ Pasó' || '⚠️ Advertencias' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "*Ejecutado: $(date -u '+%Y-%m-%d %H:%M:%S UTC')*" >> $GITHUB_STEP_SUMMARY
