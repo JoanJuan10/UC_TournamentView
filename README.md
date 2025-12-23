@@ -33,24 +33,56 @@ El plugin actualmente se encuentra en su fase de desarrollo inicial. Por ahora s
 ### ⚠️ Nota importante
 Este plugin está actualmente en **desarrollo temprano**. Solo se registra en UnderScript sin funcionalidades activas. No es recomendable instalarlo aún a menos que quieras seguir el desarrollo.
 
-### Requisitos previos
+### Para Usuarios Finales (Pendiente)
 
-1. **Navegador compatible** con extensiones de UserScripts:
-   - Chrome, Firefox, Edge, Opera, Safari, etc.
+Cuando el plugin esté listo para usuarios finales, simplemente:
 
-2. **TamperMonkey** (o gestor de UserScripts compatible):
-   - [Instalar TamperMonkey](https://www.tampermonkey.net/)
+1. Instala [TamperMonkey](https://www.tampermonkey.net/)
+2. Instala [UnderScript](https://github.com/UCProjects/UnderScript/releases/latest/download/undercards.user.js)
+3. Descarga el plugin desde [Releases](https://github.com/JoanJuan10/UC_TournamentView/releases)
+4. TamperMonkey detectará el archivo `.user.js` automáticamente
 
-3. **UnderScript** (UserScript base requerido):
-   - [Instalar UnderScript](https://github.com/UCProjects/UnderScript/releases/latest/download/undercards.user.js)
+### Para Desarrolladores
 
-### Instalación para desarrollo
+Este plugin usa el [template oficial de UCProjects](https://github.com/UCProjects/plugin-template) con webpack para el build.
 
-1. Asegúrate de tener TamperMonkey y UnderScript instalados
-2. Copia el contenido de `src/tournamentview.user.js`
-3. Crea un nuevo script en TamperMonkey y pega el código
-4. Guarda y recarga Undercards.net
-5. Verifica que "TournamentView" aparezca en la lista de plugins de UnderScript
+#### Requisitos
+
+- [Node.js](https://nodejs.org/) (v12 o superior)
+- [Git](https://git-scm.com/)
+- [TamperMonkey](https://www.tampermonkey.net/)
+- [UnderScript](https://github.com/UCProjects/UnderScript/releases/latest/download/undercards.user.js)
+
+#### Instalación
+
+1. Clona el repositorio:
+```bash
+git clone https://github.com/JoanJuan10/UC_TournamentView.git
+cd UC_TournamentView
+```
+
+2. Instala las dependencias:
+```bash
+npm install
+```
+
+3. Compila el plugin:
+```bash
+npm run build
+```
+
+4. El archivo compilado estará en `dist/tournamentview.user.js`
+5. Instálalo en TamperMonkey arrastrando el archivo al navegador
+
+#### Desarrollo en Tiempo Real
+
+Para desarrollo activo con recompilación automática:
+
+```bash
+npm start
+```
+
+Esto ejecutará webpack en modo watch. Cada vez que guardes cambios en `src/index.js`, el plugin se recompilará automáticamente en `dist/tournamentview.user.js`.
 
 ## ⚙️ Configuración
 
@@ -70,39 +102,87 @@ Accede a la configuración del plugin desde:
 - Personalizar colores y posiciones
 - Activar/desactivar elementos del overlay
 
+## 🛠️ Desarrollo
+
+### Estructura del Proyecto
+
+```
+UC_TournamentView/
+├── src/
+│   └── index.js              # Código fuente principal
+├── dist/
+│   ├── tournamentview.user.js  # Script compilado
+│   └── tournamentview.meta.js  # Metadatos para actualizaciones
+├── docs/                      # Documentación técnica
+├── templates/                 # Plantillas de diseño
+├── package.json              # Configuración npm
+├── webpack.config.js         # Configuración webpack
+└── README.md
+```
+
+### Scripts Disponibles
+
+| Comando | Descripción |
+|---------|-------------|
+| `npm install` | Instala las dependencias del proyecto |
+| `npm start` | Inicia webpack en modo watch (desarrollo) |
+| `npm run build` | Compila el plugin para producción |
+
+### Flujo de Trabajo
+
+1. Edita el código en `src/index.js`
+2. Ejecuta `npm start` para modo watch
+3. Los cambios se recompilan automáticamente en `dist/`
+4. Recarga la página de Undercards para ver los cambios
+5. Para producción, usa `npm run build`
+
+### Basado en el Template Oficial
+
+Este proyecto sigue el [template oficial de UCProjects](https://github.com/UCProjects/plugin-template), que incluye:
+- Webpack para bundling y minificación
+- `checkerV2.js` para compatibilidad con UnderScript
+- Gestión automática de versiones desde `package.json`
+- Generación de archivos `.meta.js` para actualizaciones
+
 ## 📚 Documentación
 
 | Documento | Descripción |
 |-----------|-------------|
-| [01_TAMPERMONKEY.md](docs/01_TAMPERMONKEY.md) | Estructura de UserScripts y headers |
+| [01_TAMPERMONKEY.md](docs/01_TAMPERMONKEY.md) | Estructura de UserScripts, headers y webpack |
 | [02_UNDERSCRIPT_PLUGIN_API.md](docs/02_UNDERSCRIPT_PLUGIN_API.md) | API de plugins de UnderScript |
 | [03_EVENTOS_JUEGO.md](docs/03_EVENTOS_JUEGO.md) | Eventos del juego para Spectate |
 | [04_VARIABLES_GLOBALES.md](docs/04_VARIABLES_GLOBALES.md) | Variables globales accesibles |
 | [05_LIBRERIAS_INCLUIDAS.md](docs/05_LIBRERIAS_INCLUIDAS.md) | Librerías disponibles en UnderScript |
 | [06_ESPECIFICACION_PROYECTO.md](docs/06_ESPECIFICACION_PROYECTO.md) | Especificación técnica del proyecto |
+| [07_DESARROLLO.md](docs/07_DESARROLLO.md) | **Guía de desarrollo con webpack** |
 
 ## 🗺️ Roadmap
 
-### Fase 1 - Fundamentos 🚧 (En progreso)
+### Fase 1 - Fundamentos ✅ (Completado)
 - [x] Documentación técnica completa
 - [x] Configuración Git y CI/CD
+- [x] Migración al template oficial de UCProjects
+- [x] Configuración de webpack y build system
 - [x] Registro básico del plugin en UnderScript
+
+### Fase 2 - Sistema de Plantillas 🚧 (Siguiente)
 - [ ] Sistema de plantillas (JSON + CSS)
 - [ ] Módulo de estado del juego (GameState)
 - [ ] Manejadores de eventos
+- [ ] Inyección de CSS dinámico
 
-### Fase 2 - Plantilla Esports (Pendiente)
+### Fase 3 - Plantilla Esports (Pendiente)
 - [ ] Overlay de información de jugadores
 - [ ] Marcadores estilizados (HP, oro, cartas)
 - [ ] Panel de historial de acciones
 - [ ] Animaciones de eventos (victoria, derrota, jugadas)
 
-### Fase 3 - Gestión de Plantillas (Pendiente)
+### Fase 4 - Gestión de Plantillas (Pendiente)
 - [ ] Importar/Exportar plantillas
 - [ ] Editor visual de plantillas
 - [ ] Galería de plantillas comunitarias
 
-### Fase 4 - Integraciones (Futuro)
+### Fase 5 - Integraciones (Futuro)
 - [ ] Soporte para Challonge
 - [ ] Integración con sistemas de torneo
 - [ ] Exportación de datos de partida

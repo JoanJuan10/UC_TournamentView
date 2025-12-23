@@ -119,7 +119,10 @@ Puedes añadir traducciones con sufijos de idioma:
 | `@resource` | Pre-cargar recurso (CSS, JSON, imágenes) |
 
 ```javascript
-// Cargar UnderScript como dependencia
+// Cargar checkerV2.js para compatibilidad con UnderScript (recomendado con webpack)
+@require https://raw.githubusercontent.com/UCProjects/UnderScript/master/src/checkerV2.js
+
+// O cargar UnderScript completo (desarrollo sin webpack)
 @require https://github.com/UCProjects/UnderScript/releases/latest/download/undercards.user.js
 
 // Cargar librerías adicionales
@@ -133,21 +136,81 @@ Puedes añadir traducciones con sufijos de idioma:
 
 ## Directivas Específicas para UC_TournamentView
 
-Para nuestro plugin, usaremos estas directivas:
+### Con Webpack (Recomendado)
+
+Si usas el [template oficial de UCProjects](https://github.com/UCProjects/plugin-template) con webpack, las directivas se generan automáticamente desde `package.json` y `webpack.config.js`:
+
+**package.json:**
+```json
+{
+  "name": "tournamentview",
+  "scriptName": "UC Tournament View",
+  "description": "Plugin para UnderScript...",
+  "repository": "JoanJuan10/UC_TournamentView",
+  "version": "0.1.0"
+}
+```
+
+**webpack.config.js:**
+```javascript
+const WebpackUserscript = require('webpack-userscript');
+const { name, scriptName, description, repository } = require('./package.json');
+
+module.exports = {
+  plugins: [
+    new WebpackUserscript({
+      headers: {
+        name: scriptName,
+        description,
+        namespace: 'https://uc.feildmaster.com/',
+        match: 'https://*.undercards.net/*',
+        exclude: 'https://*.undercards.net/*/*',
+        updateURL: `https://github.com/${repository}/releases/latest/download/${name}.meta.js`,
+        downloadURL: `https://github.com/${repository}/releases/latest/download/${name}.user.js`,
+        require: [
+          'https://raw.githubusercontent.com/UCProjects/UnderScript/master/src/checkerV2.js',
+        ],
+        grant: 'none',
+      },
+    }),
+  ],
+};
+```
+
+El archivo `dist/tournamentview.user.js` generado incluirá:
 
 ```javascript
 // ==UserScript==
-// @name         UC_TournamentView
+// @name        UC Tournament View
+// @version     0.1.0
+// @author      JoanJuan10
+// @description Plugin para UnderScript que mejora la vista de espectador...
+// @homepage    https://github.com/JoanJuan10/UC_TournamentView
+// @match       https://*.undercards.net/*
+// @namespace   https://uc.feildmaster.com/
+// @exclude     https://*.undercards.net/*/*
+// @updateURL   https://github.com/JoanJuan10/UC_TournamentView/releases/latest/download/tournamentview.meta.js
+// @downloadURL https://github.com/JoanJuan10/UC_TournamentView/releases/latest/download/tournamentview.user.js
+// @require     https://raw.githubusercontent.com/UCProjects/UnderScript/master/src/checkerV2.js
+// @grant       none
+// ==/UserScript==
+```
+
+### Sin Webpack (Manual)
+
+Si desarrollas directamente el UserScript sin build system:
+
+```javascript
+// ==UserScript==
+// @name         UC Tournament View
 // @name:es      Vista de Torneo UC
 // @description  Tournament view plugin for Undercards spectating
 // @description:es  Plugin de vista de torneo para espectador de Undercards
-// @version      1.0.0
-// @author       [Tu nombre]
-// @run-at       document-body
+// @version      0.1.0
+// @author       JoanJuan10
 // @match        https://*.undercards.net/*
-// @match        https://feildmaster.github.io/UnderScript/*
 // @exclude      https://*.undercards.net/*/*
-// @require      https://github.com/UCProjects/UnderScript/releases/latest/download/undercards.user.js
+// @require      https://raw.githubusercontent.com/UCProjects/UnderScript/master/src/checkerV2.js
 // @homepage     https://github.com/[tu-usuario]/UC_TournamentView
 // @supportURL   https://github.com/[tu-usuario]/UC_TournamentView/issues
 // @namespace    https://github.com/[tu-usuario]/
@@ -222,111 +285,168 @@ Define cuándo se ejecuta el script:
 
 ## Plantilla Base del Plugin
 
-Esta es la plantilla inicial para UC_TournamentView:
+### Con Webpack (Recomendado)
+
+Al usar el template oficial, tu código en `src/index.js` es limpio y simple:
+
+```javascript
+const underscript = window.underscript;
+const plugin = underscript.plugin('TournamentView', GM_info.version);
+
+// Setting básico de activación
+const isEnabled = plugin.settings().add({
+    key: 'enabled',
+    name: 'Activar Tournament View',
+    type: 'boolean',
+    default: true,
+});
+
+// Evento principal
+plugin.events.on(':preload', () => {
+    if (!isEnabled.value) return;
+    
+    console.log('TournamentView plugin loaded');
+    
+    // Tu código aquí
+});
+```
+
+Webpack se encarga de:
+- ✅ Generar el header completo
+- ✅ Minificar el código
+- ✅ Gestionar versiones desde `package.json`
+- ✅ Incluir `checkerV2.js` automáticamente
+- ✅ Crear archivo `.meta.js` para actualizaciones
+
+### Sin Webpack (Desarrollo Rápido)
+
+Para desarrollo rápido sin build, usa esta plantilla en `tournamentview.user.js`:
 
 ```javascript
 // ==UserScript==
-// @name         UC_TournamentView
+// @name         UC Tournament View
+// @version      0.1.0
+// @author       JoanJuan10
+// @description  Plugin para UnderScript que mejora la vista de espectador
+// @match        https://*.undercards.net/*
+// @exclude      https://*.undercards.net/*/*
+// @require      https://raw.githubusercontent.com/UCProjects/UnderScript/master/src/checkerV2.js
+// @grant        none
+// ==/UserScript==
+
+const underscript = window.underscript;
+const plugin = underscript.plugin('TournamentView', GM_info.version);
+
+// Setting básico
+const isEnabled = plugin.settings().add({
+    key: 'enabled',
+    name: 'Activar Tournament View',
+    type: 'boolean',
+    default: true,
+});
+
+// Evento principal
+plugin.events.on(':preload', () => {
+    if (!isEnabled.value) return;
+    console.log('TournamentView cargado');
+});
+```
+
+### Plantilla Completa (Sin Webpack)
+
+Para un plugin completo sin webpack:
+
+```javascript
+// ==UserScript==
+// @name         UC Tournament View
 // @name:es      Vista de Torneo UC
 // @description  Tournament view plugin for Undercards spectating
 // @description:es  Plugin de vista de torneo para espectador de Undercards
-// @version      1.0.0
-// @author       [Tu nombre]
-// @run-at       document-body
+// @version      0.1.0
+// @author       JoanJuan10
 // @match        https://*.undercards.net/*
-// @match        https://feildmaster.github.io/UnderScript/*
 // @exclude      https://*.undercards.net/*/*
-// @require      https://github.com/UCProjects/UnderScript/releases/latest/download/undercards.user.js
-// @homepage     https://github.com/[tu-usuario]/UC_TournamentView
-// @supportURL   https://github.com/[tu-usuario]/UC_TournamentView/issues
-// @namespace    https://github.com/[tu-usuario]/
+// @require      https://raw.githubusercontent.com/UCProjects/UnderScript/master/src/checkerV2.js
+// @homepage     https://github.com/JoanJuan10/UC_TournamentView
+// @supportURL   https://github.com/JoanJuan10/UC_TournamentView/issues
+// @namespace    https://github.com/JoanJuan10/
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=undercards.net
 // @grant        none
 // ==/UserScript==
 
-(function() {
-    'use strict';
+const underscript = window.underscript;
+const plugin = underscript.plugin('TournamentView', GM_info.version);
+const events = plugin.events();
+const settings = plugin.settings();
+const logger = plugin.logger();
 
-    // ============================================
-    // REGISTRO DEL PLUGIN
-    // ============================================
-    
-    // Crear plugin (nombre máx 20 caracteres, alfanumérico + espacios)
-    const plugin = underscript.plugin('TournamentView', '1.0.0');
-    
-    // Obtener APIs del plugin
-    const events = plugin.events();
-    const settings = plugin.settings();
-    const logger = plugin.logger();
-    
-    // ============================================
-    // ESTILOS CSS
-    // ============================================
-    
-    const style = plugin.addStyle(`
-        /* Estilos base del plugin */
-        .tournament-view {
-            /* ... */
-        }
-    `);
-    
-    // ============================================
-    // CONFIGURACIÓN (SETTINGS)
-    // ============================================
-    
-    const enabledSetting = settings.add({
-        key: 'tournamentview.enabled',
-        name: 'Activar Vista de Torneo',
-        type: 'boolean',
-        default: true,
-        category: 'Tournament View',
-    });
-    
-    // ============================================
-    // LÓGICA PRINCIPAL
-    // ============================================
-    
-    // Solo ejecutar en página Spectate
-    if (!underscript.onPage('Spectate')) {
-        logger.debug('No estamos en Spectate, plugin inactivo');
-        return;
+// ============================================
+// ESTILOS CSS
+// ============================================
+
+const style = plugin.addStyle(`
+    /* Estilos base del plugin */
+    .tournament-view {
+        /* ... */
     }
-    
-    // Evento: Página cargada
-    events.on(':preload', () => {
-        logger.log('Plugin cargado en modo Spectate');
-    });
-    
-    // Evento: Partida iniciada
-    events.on('GameStart', () => {
-        if (!enabledSetting.value()) return;
-        logger.log('Partida detectada, inicializando vista de torneo...');
-        // Inicializar overlay aquí
-    });
-    
-    // Evento: Conexión establecida (datos de jugadores disponibles)
-    events.on('connect', (data) => {
-        if (!enabledSetting.value()) return;
-        logger.log('Datos de partida recibidos:', data);
-        // Procesar datos de jugadores aquí
-    });
-    
-    // Evento: Partida finalizada
-    events.on('getVictory getDefeat getResult', (data) => {
-        logger.log('Partida finalizada:', data);
-        // Mostrar resultado aquí
-    });
-    
-    // ============================================
-    // NOTIFICACIÓN DE CARGA
-    // ============================================
-    
-    plugin.toast({
-        title: 'Tournament View',
-        text: 'Plugin cargado correctamente',
-    });
+`);
 
-})();
+// ============================================
+// CONFIGURACIÓN (SETTINGS)
+// ============================================
+
+const enabledSetting = settings.add({
+    key: 'tournamentview.enabled',
+    name: 'Activar Vista de Torneo',
+    type: 'boolean',
+    default: true,
+    category: 'Tournament View',
+});
+
+// ============================================
+// LÓGICA PRINCIPAL
+// ============================================
+
+// Solo ejecutar en página Spectate
+if (!underscript.onPage('Spectate')) {
+    logger.debug('No estamos en Spectate, plugin inactivo');
+    return;
+}
+
+// Evento: Página cargada
+events.on(':preload', () => {
+    if (!enabledSetting.value) return;
+    logger.log('Plugin cargado en modo Spectate');
+});
+
+// Evento: Partida iniciada
+events.on('GameStart', () => {
+    if (!enabledSetting.value) return;
+    logger.log('Partida detectada, inicializando vista de torneo...');
+    // Inicializar overlay aquí
+});
+
+// Evento: Conexión establecida (datos de jugadores disponibles)
+events.on('connect', (data) => {
+    if (!enabledSetting.value) return;
+    logger.log('Datos de partida recibidos:', data);
+    // Procesar datos de jugadores aquí
+});
+
+// Evento: Partida finalizada
+events.on('getVictory getDefeat getResult', (data) => {
+    logger.log('Partida finalizada:', data);
+    // Mostrar resultado aquí
+});
+
+// ============================================
+// NOTIFICACIÓN DE CARGA
+// ============================================
+
+plugin.toast({
+    title: 'Tournament View',
+    text: 'Plugin cargado correctamente',
+});
 ```
 
 ---

@@ -21,7 +21,8 @@ Documentación completa de la API de plugins de UnderScript, incluyendo registro
 ### Crear un Plugin
 
 ```javascript
-const plugin = underscript.plugin('NombrePlugin', '1.0.0');
+const underscript = window.underscript;
+const plugin = underscript.plugin('TournamentView', GM_info.version);
 ```
 
 #### Parámetros
@@ -30,6 +31,8 @@ const plugin = underscript.plugin('NombrePlugin', '1.0.0');
 |-----------|------|-----------|-------------|
 | `name` | `string` | ✅ | Nombre del plugin (máx. 20 caracteres) |
 | `version` | `string \| number` | ❌ | Versión del plugin |
+
+> 💡 **Nota**: Usa `GM_info.version` para obtener automáticamente la versión desde los metadatos del UserScript. Esto es especialmente útil con webpack donde la versión se gestiona en `package.json`.
 
 #### Restricciones del Nombre
 
@@ -42,14 +45,19 @@ const plugin = underscript.plugin('NombrePlugin', '1.0.0');
 ```javascript
 plugin.name      // Nombre del plugin
 plugin.version   // Versión del plugin (si se proporcionó)
+plugin.events    // Gestor de eventos (acceso directo)
+plugin.settings  // Función para obtener gestor de settings
 ```
 
 #### Ejemplo
 
 ```javascript
-// ✅ Correcto
-const plugin = underscript.plugin('TournamentView', '1.0.0');
-const plugin = underscript.plugin('Mi Plugin', 2);
+// ✅ Correcto - Usando GM_info.version (recomendado)
+const underscript = window.underscript;
+const plugin = underscript.plugin('TournamentView', GM_info.version);
+
+// ✅ También válido - Versión manual
+const plugin = window.underscript.plugin('Mi Plugin', '1.0.0');
 
 // ❌ Incorrecto
 const plugin = underscript.plugin('Este-Nombre-Es-Muy-Largo!', '1.0'); // Muy largo + caracteres inválidos
@@ -77,8 +85,19 @@ Una vez creado el plugin, tienes acceso a estos métodos:
 ### Obtener el Gestor de Eventos
 
 ```javascript
+// Acceso directo (recomendado)
+plugin.events.on(':preload', () => {
+    console.log('Plugin cargado');
+});
+
+// También disponible vía método
 const events = plugin.events();
+events.on('GameStart', () => {
+    console.log('Partida iniciada');
+});
 ```
+
+> 💡 **Nota**: A partir del template oficial, puedes usar `plugin.events.on()` directamente sin llamar a `plugin.events()` primero.
 
 ### Escuchar Eventos
 
@@ -88,13 +107,18 @@ Escucha un evento. Puede escuchar múltiples eventos separados por espacio.
 
 ```javascript
 // Evento único
-events.on('GameStart', (data) => {
+plugin.events.on('GameStart', (data) => {
     console.log('Partida iniciada!', data);
 });
 
 // Múltiples eventos
-events.on('getVictory getDefeat', (data) => {
+plugin.events.on('getVictory getDefeat', (data) => {
     console.log('Partida terminada');
+});
+
+// Evento :preload (carga inicial del plugin)
+plugin.events.on(':preload', () => {
+    console.log('Plugin inicializado');
 });
 ```
 

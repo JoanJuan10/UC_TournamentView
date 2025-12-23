@@ -47,48 +47,79 @@ Transformar la página de espectador (`/Spectate?gameId=XXX&playerId=YYY`) de Un
 
 ```
 UC_TournamentView
+├── Build System
+│   ├── webpack.config.js
+│   ├── package.json
+│   └── Node.js dependencies
+│
 ├── Core
-│   ├── Plugin Registration
+│   ├── Plugin Registration (src/index.js)
 │   ├── Settings Manager
 │   └── Event Handlers
 │
-├── Template System
+├── Template System (Futuro)
 │   ├── Template Loader
 │   ├── Template Parser
 │   ├── Import/Export Manager
 │   └── CSS Injector
 │
-├── UI Components
+├── UI Components (Futuro)
 │   ├── Header Bar (nombres, HP)
 │   ├── Score Panel (marcadores)
 │   ├── Turn Indicator
 │   ├── Action Log
 │   └── Victory/Defeat Overlay
 │
-└── Data Layer
+└── Data Layer (Futuro)
     ├── Player State
     ├── Game State
     └── Template Storage
 ```
 
-### Estructura de Archivos (Propuesta)
+### Estructura de Archivos
 
 ```
 UC_TournamentView/
 ├── README.md
 ├── LICENSE
+├── package.json              # Configuración npm y metadatos
+├── webpack.config.js         # Configuración de webpack
+├── .eslintrc.js              # Configuración de linting
+├── .github/                  # Workflows de CI/CD
+│   └── workflows/
+│       └── ci.yml
 ├── src/
-│   └── tournamentview.user.js    # Script principal
-├── docs/
+│   └── index.js              # Código fuente principal del plugin
+├── dist/                     # Archivos compilados (generados)
+│   ├── tournamentview.user.js
+│   └── tournamentview.meta.js
+├── docs/                     # Documentación técnica
 │   ├── 01_TAMPERMONKEY.md
 │   ├── 02_UNDERSCRIPT_PLUGIN_API.md
 │   ├── 03_EVENTOS_JUEGO.md
 │   ├── 04_VARIABLES_GLOBALES.md
 │   ├── 05_LIBRERIAS_INCLUIDAS.md
 │   ├── 06_ESPECIFICACION_PROYECTO.md
-│   └── underscript.js            # Referencia
-└── templates/
-    └── esports-moderno.json      # Plantilla por defecto
+│   ├── 07_DESARROLLO.md
+│   └── underscript.js        # Referencia del código fuente
+└── templates/                # Plantillas de diseño
+    └── esports-moderno.json  # Plantilla por defecto (futuro)
+```
+
+### Flujo de Desarrollo
+
+```
+1. Editar código en src/index.js
+        ↓
+2. Ejecutar `npm start` (watch) o `npm run build`
+        ↓
+3. Webpack compila y empaqueta
+        ↓
+4. Se genera dist/tournamentview.user.js
+        ↓
+5. TamperMonkey detecta el cambio
+        ↓
+6. Recargar página de Undercards para ver cambios
 ```
 
 ---

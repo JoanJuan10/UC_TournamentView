@@ -1,0 +1,30 @@
+{
+  "name": "tournamentview",
+  "scriptName": "UC Tournament View",
+  "description": "Plugin para UnderScript que mejora la vista de espectador en Undercards.net con plantillas modernas",
+  "repository": "JoanJuan10/UC_TournamentView",
+  "version": "0.1.0",
+  "license": "MIT",
+  "homepage": "https://github.com/JoanJuan10/UC_TournamentView",
+  "author": "JoanJuan10",
+  "scripts": {
+    "start": "webpack --config webpack.config.js --watch --stdin --dev",
+    "build": "webpack --config webpack.config.js",
+    "prepack": "webpack --config webpack.config.js"
+  },
+  "files": [
+    "dist/*.js"
+  ],
+  "keywords": [
+    "underscript",
+    "underscript-plugin"
+  ],
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.20.1",
+    "webpack": "^4.41.6",
+    "webpack-cli": "^3.3.11",
+    "webpack-userscript": "^2.5.1"
+  }
+}
