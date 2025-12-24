@@ -1392,6 +1392,44 @@ class UIManager {
         this.elements.actionLog.classList.toggle('collapsed');
     }
 
+    translateLogHTML(html) {
+        // Solo traducir si el idioma es español
+        if (i18n.currentLanguage !== 'es') {
+            return html;
+        }
+
+        // Patrones de traducción (inglés → español)
+        const translations = [
+            // Turnos y acciones de jugadores
+            { pattern: /\'s turn/g, replacement: ' es el turno de' },
+            { pattern: /&gt;&gt;&gt; Turn (\d+)/g, replacement: '&gt;&gt;&gt; Turno $1' },
+            
+            // Acciones de cartas
+            { pattern: / played /g, replacement: ' jugó ' },
+            { pattern: / used /g, replacement: ' usó ' },
+            { pattern: / attacked /g, replacement: ' atacó a ' },
+            { pattern: / was killed/g, replacement: ' fue eliminado' },
+            
+            // HP
+            { pattern: / lost (\d+) hp/g, replacement: ' perdió $1 hp' },
+            { pattern: / gained (\d+) hp/g, replacement: ' ganó $1 hp' },
+            
+            // Efectos y almas
+            { pattern: /\'s effect activated/g, replacement: ': efecto activado' },
+            { pattern: /\'s soul activated on /g, replacement: ': alma activada en ' },
+            { pattern: /\'s soul activated/g, replacement: ': alma activada' },
+            { pattern: / activated on /g, replacement: ' activado en ' },
+            { pattern: / activated/g, replacement: ' activado' },
+        ];
+
+        let translatedHTML = html;
+        for (const { pattern, replacement } of translations) {
+            translatedHTML = translatedHTML.replace(pattern, replacement);
+        }
+
+        return translatedHTML;
+    }
+
     parseLogEntry(entry) {
         const text = entry.textContent || '';
         const html = entry.innerHTML || '';
@@ -1425,9 +1463,9 @@ class UIManager {
         // Obtener todas las entradas (divs directos de #log)
         const entries = Array.from(underscriptLog.children);
         
-        // Mostrar las últimas 50 entradas (orden inverso, más recientes primero)
+        // Mostrar las últimas 50 entradas (en orden cronológico, más recientes al final)
         const maxVisible = 50;
-        const visibleEntries = entries.slice(-maxVisible).reverse();
+        const visibleEntries = entries.slice(-maxVisible);
         
         if (visibleEntries.length === 0) {
             this.elements.logContent.innerHTML = `<div class="tv-log-entry tv-log-entry-info">${i18n.t('ui.noActions')}</div>`;
@@ -1439,15 +1477,18 @@ class UIManager {
             const parsed = this.parseLogEntry(entry);
             const typeClass = `tv-log-entry-${parsed.type}`;
             
+            // Traducir el HTML si es necesario
+            const translatedHTML = this.translateLogHTML(parsed.html);
+            
             return `
                 <div class="tv-log-entry ${typeClass}">
-                    ${parsed.html}
+                    ${translatedHTML}
                 </div>
             `;
         }).join('');
         
-        // Scroll al principio (más reciente)
-        this.elements.logContent.scrollTop = 0;
+        // Scroll al final (acciones más recientes abajo)
+        this.elements.logContent.scrollTop = this.elements.logContent.scrollHeight;
     }
 
     createHeader() {
