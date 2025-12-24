@@ -1398,10 +1398,18 @@ class UIManager {
             return html;
         }
 
+        let translatedHTML = html;
+
+        // Primero, manejar el caso especial de "'s turn" - requiere reorganizar la frase
+        // Buscar el patrón completo: <cualquier cosa>'s turn
+        translatedHTML = translatedHTML.replace(
+            /(<[^>]+>.*?<\/[^>]+>)'s turn/gi,
+            (match, playerHTML) => `Es el turno de ${playerHTML}`
+        );
+
         // Patrones de traducción (inglés → español)
         const translations = [
-            // Turnos y acciones de jugadores
-            { pattern: /\'s turn/g, replacement: ' es el turno de' },
+            // Turnos
             { pattern: /&gt;&gt;&gt; Turn (\d+)/g, replacement: '&gt;&gt;&gt; Turno $1' },
             
             // Acciones de cartas
@@ -1422,7 +1430,6 @@ class UIManager {
             { pattern: / activated/g, replacement: ' activado' },
         ];
 
-        let translatedHTML = html;
         for (const { pattern, replacement } of translations) {
             translatedHTML = translatedHTML.replace(pattern, replacement);
         }
