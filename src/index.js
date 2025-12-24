@@ -1494,8 +1494,12 @@ class UIManager {
             `;
         }).join('');
         
-        // Scroll al inicio (más recientes arriba)
-        this.elements.logContent.scrollTop = 0;
+        // Scroll al final para mostrar siempre las más recientes
+        setTimeout(() => {
+            if (this.elements.logContent) {
+                this.elements.logContent.scrollTop = this.elements.logContent.scrollHeight;
+            }
+        }, 0);
     }
 
     createHeader() {
