@@ -283,6 +283,30 @@ ${baseCSS}
     display: none !important;
 }
 
+/* 
+ * TABLERO DE JUEGO - Ajuste de posición
+ * 
+ * NOTA FASE 4: Este elemento .mainContent y todos sus subelementos deberán ser gestionables
+ * en el sistema de plantillas. Incluye:
+ * - Avatares (#enemyAvatar, #yourAvatar)
+ * - Fases del juego (#phase1, #phase2)
+ * - Perfiles de jugadores (.profile)
+ * - Tablero de juego (#board con celdas y cartas)
+ * - Información de HP, ORO, cartas en mano/mazo
+ * - Timer (.timer)
+ * - Cartas en mano (#handCards)
+ * - Emotes (bubbles y emotes)
+ * 
+ * Propiedades configurables en plantillas:
+ * - Posición vertical (margin-top)
+ * - Escala/zoom (transform: scale)
+ * - Opacidad durante overlay
+ * - Filtros visuales (blur, brightness)
+ */
+.mainContent {
+    margin-top: 100px !important;
+}
+
 /* Tournament View Base Styles */
 #uc-tournament-view {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
