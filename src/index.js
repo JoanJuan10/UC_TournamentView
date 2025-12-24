@@ -2,6 +2,104 @@ const underscript = window.underscript;
 const plugin = underscript.plugin('TournamentView', GM_info.version);
 
 // ============================================
+// I18N SYSTEM
+// ============================================
+
+class I18n {
+    constructor() {
+        this.currentLanguage = 'es';
+        this.translations = {
+            es: {
+                // UI Labels
+                'ui.turn': 'Turno',
+                'ui.toggleHistory': 'Mostrar/Ocultar Historial',
+                'ui.historyTitle': 'Historial de Acciones',
+                'ui.waitingHistory': 'Esperando historial del juego...',
+                'ui.noActions': 'Sin acciones registradas aún',
+                'ui.totalTurns': 'Turnos totales:',
+                'ui.finalHP': 'HP Final:',
+                
+                // Game Results
+                'result.victory': '¡VICTORIA!',
+                'result.defeat': 'DERROTA',
+                
+                // Notifications
+                'notif.receivedDamage': '{player} recibió {damage} de daño',
+                'notif.healed': '{player} sanó {heal} HP',
+                'notif.cardPlayed': '{player} jugó {card}',
+                'notif.spellCast': '{player} lanzó {spell}',
+                'notif.monsterDestroyed': '{monster} fue destruido',
+                'notif.artifactActivated': 'Artefacto activado: {artifact}',
+                'notif.soulEffect': 'Efecto de alma: {soul}',
+                
+                // Settings
+                'settings.enabled': 'Activar Tournament View',
+                'settings.language': 'Idioma',
+                'settings.languageDesc': 'Seleccionar idioma de la interfaz',
+                
+                // Player defaults
+                'player.default': 'Jugador',
+                'player.opponent': 'Oponente',
+            },
+            en: {
+                // UI Labels
+                'ui.turn': 'Turn',
+                'ui.toggleHistory': 'Toggle History',
+                'ui.historyTitle': 'Action History',
+                'ui.waitingHistory': 'Waiting for game history...',
+                'ui.noActions': 'No actions recorded yet',
+                'ui.totalTurns': 'Total Turns:',
+                'ui.finalHP': 'Final HP:',
+                
+                // Game Results
+                'result.victory': 'VICTORY!',
+                'result.defeat': 'DEFEAT',
+                
+                // Notifications
+                'notif.receivedDamage': '{player} received {damage} damage',
+                'notif.healed': '{player} healed {heal} HP',
+                'notif.cardPlayed': '{player} played {card}',
+                'notif.spellCast': '{player} cast {spell}',
+                'notif.monsterDestroyed': '{monster} was destroyed',
+                'notif.artifactActivated': 'Artifact activated: {artifact}',
+                'notif.soulEffect': 'Soul effect: {soul}',
+                
+                // Settings
+                'settings.enabled': 'Enable Tournament View',
+                'settings.language': 'Language',
+                'settings.languageDesc': 'Select interface language',
+                
+                // Player defaults
+                'player.default': 'Player',
+                'player.opponent': 'Opponent',
+            }
+        };
+    }
+
+    setLanguage(lang) {
+        if (this.translations[lang]) {
+            this.currentLanguage = lang;
+            console.log(`[TournamentView] Idioma cambiado a: ${lang}`);
+            return true;
+        }
+        console.warn(`[TournamentView] Idioma no soportado: ${lang}`);
+        return false;
+    }
+
+    t(key, params = {}) {
+        const translation = this.translations[this.currentLanguage][key] || key;
+        
+        // Reemplazar parámetros {param} en la traducción
+        return translation.replace(/\{(\w+)\}/g, (match, param) => {
+            return params[param] !== undefined ? params[param] : match;
+        });
+    }
+}
+
+// Initialize I18n
+const i18n = new I18n();
+
+// ============================================
 // GAME STATE MODULE
 // ============================================
 
@@ -1220,7 +1318,7 @@ class UIManager {
         const floatToggle = document.createElement('button');
         floatToggle.className = 'tv-log-float-toggle';
         floatToggle.innerHTML = '📜';
-        floatToggle.title = 'Toggle Historial';
+        floatToggle.title = i18n.t('ui.toggleHistory');
         document.body.appendChild(floatToggle);
         this.elements.logFloatToggle = floatToggle;
         
@@ -1229,7 +1327,7 @@ class UIManager {
         logPanel.className = 'tv-action-log collapsed';
         logPanel.innerHTML = `
             <div class="tv-log-header">
-                <span>Historial de Acciones</span>
+                <span>${i18n.t('ui.historyTitle')}</span>
                 <button class="tv-log-toggle">✕</button>
             </div>
             <div class="tv-log-content" data-log-content></div>
@@ -1305,7 +1403,7 @@ class UIManager {
         const underscriptLog = document.querySelector('#history #log');
         
         if (!underscriptLog) {
-            this.elements.logContent.innerHTML = '<div class="tv-log-entry tv-log-entry-info">Esperando historial del juego...</div>';
+            this.elements.logContent.innerHTML = `<div class="tv-log-entry tv-log-entry-info">${i18n.t('ui.waitingHistory')}</div>`;
             return;
         }
         
@@ -1317,7 +1415,7 @@ class UIManager {
         const visibleEntries = entries.slice(-maxVisible).reverse();
         
         if (visibleEntries.length === 0) {
-            this.elements.logContent.innerHTML = '<div class="tv-log-entry tv-log-entry-info">Sin acciones registradas aún</div>';
+            this.elements.logContent.innerHTML = `<div class="tv-log-entry tv-log-entry-info">${i18n.t('ui.noActions')}</div>`;
             return;
         }
         
@@ -1484,18 +1582,18 @@ class UIManager {
                 setTimeout(() => hpBar.classList.remove('hp-damage'), 500);
                 
                 // Mostrar notificación
-                const playerName = data.username || (player === 'player' ? 'Player' : 'Opponent');
+                const playerName = data.username || (player === 'player' ? i18n.t('player.default') : i18n.t('player.opponent'));
                 const damage = Math.abs(Math.round(hpChange * data.maxHp / 100));
-                this.showFloatingNotification(`${playerName} recibió ${damage} de daño`, 'damage', 2500);
+                this.showFloatingNotification(i18n.t('notif.receivedDamage', { player: playerName, damage }), 'damage', 2500);
             } else if (hpChange > 0) {
                 // Curación recibida
                 hpBar.classList.add('hp-heal');
                 setTimeout(() => hpBar.classList.remove('hp-heal'), 500);
                 
                 // Mostrar notificación
-                const playerName = data.username || (player === 'player' ? 'Player' : 'Opponent');
+                const playerName = data.username || (player === 'player' ? i18n.t('player.default') : i18n.t('player.opponent'));
                 const heal = Math.round(hpChange * data.maxHp / 100);
-                this.showFloatingNotification(`${playerName} sanó ${heal} HP`, 'heal', 2500);
+                this.showFloatingNotification(i18n.t('notif.healed', { player: playerName, heal }), 'heal', 2500);
             }
         }
     }
@@ -1738,7 +1836,7 @@ class UIManager {
         const overlay = document.createElement('div');
         overlay.className = 'tv-result-overlay';
         
-        const title = result === 'victory' ? '¡VICTORIA!' : 'DERROTA';
+        const title = result === 'victory' ? i18n.t('result.victory') : i18n.t('result.defeat');
         const titleClass = result === 'victory' ? 'victory' : 'defeat';
         
         overlay.innerHTML = `
@@ -1746,11 +1844,11 @@ class UIManager {
                 <div class="tv-result-title ${titleClass}">${title}</div>
                 <div class="tv-result-stats">
                     <div class="tv-result-stat">
-                        <span class="tv-result-stat-label">Turnos totales:</span>
+                        <span class="tv-result-stat-label">${i18n.t('ui.totalTurns')}</span>
                         <span class="tv-result-stat-value">${gameState.turn}</span>
                     </div>
                     <div class="tv-result-stat">
-                        <span class="tv-result-stat-label">HP Final:</span>
+                        <span class="tv-result-stat-label">${i18n.t('ui.finalHP')}</span>
                         <span class="tv-result-stat-value">${gameState.player.hp}/${gameState.player.maxHp}</span>
                     </div>
                 </div>
@@ -1805,9 +1903,31 @@ let timerWatcher = null;
 // Setting básico de activación
 const isEnabled = plugin.settings().add({
     key: 'enabled',
-    name: 'Activar Tournament View',
+    name: i18n.t('settings.enabled'),
     type: 'boolean',
     default: false,
+});
+
+// Setting de idioma
+const languageSetting = plugin.settings().add({
+    key: 'language',
+    name: i18n.t('settings.language'),
+    description: i18n.t('settings.languageDesc'),
+    type: 'dropdown',
+    options: [
+        { value: 'es', text: 'Español' },
+        { value: 'en', text: 'English' }
+    ],
+    default: 'es',
+    onChange: (newValue) => {
+        i18n.setLanguage(newValue);
+        // Si hay UI activa, regenerarla con el nuevo idioma
+        if (uiManager.container && gameState.isActive) {
+            uiManager.destroy();
+            uiManager.create();
+            uiManager.update();
+        }
+    }
 });
 
 console.log('[TournamentView] Setting creado - isEnabled:', isEnabled);
@@ -1848,6 +1968,12 @@ isEnabled.on('change', (newValue) => {
 // Evento principal de carga
 plugin.events.on(':preload', () => {
     console.log('[TournamentView] :preload - isEnabled.value():', isEnabled.value());
+    
+    // Inicializar idioma desde configuración
+    const savedLanguage = languageSetting.value();
+    if (savedLanguage) {
+        i18n.setLanguage(savedLanguage);
+    }
     
     if (!isEnabled.value()) {
         console.log('[TournamentView] Plugin DESACTIVADO - No se iniciará');
@@ -1902,7 +2028,7 @@ plugin.events.on('connect', (data) => {
         // Inicializar datos del jugador principal
         if (you) {
             gameState.player.id = you.id;
-            gameState.player.username = you.username || 'Player';
+            gameState.player.username = you.username || i18n.t('player.default');
             gameState.player.hp = you.hp || 30;
             gameState.player.maxHp = you.maxHp || 30;
             gameState.player.gold = golds[you.id] || 0;
@@ -1935,7 +2061,7 @@ plugin.events.on('connect', (data) => {
         // Inicializar datos del oponente
         if (enemy) {
             gameState.opponent.id = enemy.id;
-            gameState.opponent.username = enemy.username || 'Opponent';
+            gameState.opponent.username = enemy.username || i18n.t('player.opponent');
             gameState.opponent.hp = enemy.hp || 30;
             gameState.opponent.maxHp = enemy.maxHp || 30;
             gameState.opponent.gold = golds[enemy.id] || 0;
