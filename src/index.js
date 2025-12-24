@@ -773,7 +773,7 @@ ${baseCSS}
 }
 
 .tv-action-log.collapsed {
-    transform: translateX(350px);
+    transform: translateX(450px);
 }
 
 .tv-log-header {
@@ -785,7 +785,7 @@ ${baseCSS}
     border-radius: 12px 0 0 0;
     color: white;
     font-weight: bold;
-    font-size: 1rem;
+    font-size: 1.2rem;
 }
 
 .tv-log-toggle {
@@ -829,21 +829,21 @@ ${baseCSS}
 }
 
 .tv-log-entry {
-    padding: 0.65rem 0.9rem;
-    margin-bottom: 0.6rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.7rem;
     border-radius: 6px;
     background: rgba(255, 255, 255, 0.05);
     border-left: 3px solid var(--tv-accent-color);
-    font-size: 1rem;
+    font-size: 1.1rem;
     color: rgba(255, 255, 255, 0.9);
     animation: fadeIn 0.3s ease;
-    line-height: 1.7;
+    line-height: 1.8;
 }
 
 /* Estilos para el contenido HTML de Underscript dentro de las entradas */
 .tv-log-entry img {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     vertical-align: middle;
     margin: 0 3px;
     display: inline-block;
