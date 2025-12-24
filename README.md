@@ -204,12 +204,24 @@ Este proyecto sigue el [template oficial de UCProjects](https://github.com/UCPro
 - [x] Settings funcional con activar/desactivar
 - [x] Timer sincronizado con `window.global('time')`
 
-### Fase 3 - Mejoras Visuales 🚧 (En progreso)
-- [ ] Animaciones de transición suaves
-- [ ] Efectos visuales para eventos importantes
-- [ ] Panel de historial de acciones
-- [ ] Mejoras en responsive design
-- [ ] Temas de color alternativos
+### Fase 3 - Mejoras Visuales ✅ (Completado)
+- [x] Animaciones de HP con efectos visuales (shake en daño, pulse en curación)
+- [x] Sistema de notificaciones flotantes
+- [x] Efectos visuales en eventos importantes:
+  - [x] Cartas jugadas (notificación verde)
+  - [x] Hechizos usados (notificación púrpura)
+  - [x] Monstruos destruidos (notificación roja)
+  - [x] Efectos de artefactos (notificación dorada + glow en icono)
+  - [x] Efectos de almas (notificación azul + glow en icono)
+- [x] Panel de historial colapsable
+  - [x] Muestra últimas 30 acciones
+  - [x] Botón flotante para toggle
+  - [x] Categorización por tipo de evento
+  - [x] Auto-scroll a nuevas entradas
+- [x] Responsive design con 3 breakpoints
+  - [x] 1280px: Layout compacto
+  - [x] 768px: Layout vertical
+  - [x] 480px: Optimizado para móviles
 
 ### Fase 4 - Gestión de Plantillas (Pendiente)
 - [ ] Importar/Exportar plantillas personalizadas

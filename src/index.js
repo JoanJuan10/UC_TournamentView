@@ -44,6 +44,8 @@ class GameState {
         this.turn = 0;
         this.currentPlayer = null;
         this.gameResult = null; // 'victory', 'defeat', or null
+        this.actionLog = []; // Historial de acciones
+        this.maxLogEntries = 50; // Máximo de entradas
     }
 
     updatePlayer(data) {
@@ -82,6 +84,22 @@ class GameState {
             currentPlayer: this.currentPlayer,
             gameResult: this.gameResult,
         };
+    }
+
+    addAction(type, player, message, data = {}) {
+        this.actionLog.unshift({
+            timestamp: Date.now(),
+            turn: this.turn,
+            type: type,
+            player: player,
+            message: message,
+            data: data,
+        });
+        
+        // Limitar el tamaño del log
+        if (this.actionLog.length > this.maxLogEntries) {
+            this.actionLog.pop();
+        }
     }
 }
 
@@ -236,6 +254,60 @@ ${baseCSS}
     }
 }
 
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    50% { transform: translateX(4px); }
+    75% { transform: translateX(-4px); }
+}
+
+@keyframes slideInRight {
+    from {
+        right: -350px;
+        opacity: 0;
+    }
+    to {
+        right: 20px;
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        right: 20px;
+        opacity: 1;
+    }
+    to {
+        right: -350px;
+        opacity: 0;
+    }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+@keyframes glow {
+    0%, 100% {
+        box-shadow: 0 0 5px currentColor;
+    }
+    50% {
+        box-shadow: 0 0 20px currentColor, 0 0 30px currentColor;
+    }
+}
+
+@keyframes artifactPulse {
+    0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 5px #fbbf24);
+    }
+    50% {
+        transform: scale(1.1);
+        filter: drop-shadow(0 0 15px #fbbf24) drop-shadow(0 0 25px #fbbf24);
+    }
+}
+
 .tv-player-name {
     font-size: 1.5rem;
     font-weight: bold;
@@ -267,6 +339,25 @@ ${baseCSS}
     background: linear-gradient(90deg, #ef4444 0%, #f59e0b 50%, #10b981 100%);
     transition: width 0.3s ease;
     box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+}
+
+.tv-hp-fill.hp-damage {
+    animation: shake 0.3s ease;
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.8);
+}
+
+.tv-hp-fill.hp-heal {
+    animation: bounce 0.5s ease;
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.8);
+}
+
+.tv-soul-image.soul-glow {
+    animation: glow 0.5s ease 2;
+    color: #3b82f6;
+}
+
+.tv-artifact-image.artifact-glow {
+    animation: artifactPulse 0.6s ease 2;
 }
 
 .tv-hp-text {
@@ -521,6 +612,294 @@ ${baseCSS}
     color: var(--tv-text-color, #ffffff);
     font-weight: bold;
 }
+
+/* Notificaciones Flotantes */
+.tv-notification {
+    position: fixed;
+    top: 90px;
+    right: 20px;
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 10001;
+    animation: slideInRight 0.3s ease forwards;
+    margin-bottom: 10px;
+    backdrop-filter: blur(10px);
+    max-width: 300px;
+    word-wrap: break-word;
+}
+
+.tv-notification.hiding {
+    animation: slideOutRight 0.3s ease forwards;
+}
+
+.tv-notification-info {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(37, 99, 235, 0.9));
+}
+
+.tv-notification-card {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.9), rgba(5, 150, 105, 0.9));
+}
+
+.tv-notification-spell {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.9), rgba(109, 40, 217, 0.9));
+}
+
+.tv-notification-damage {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.9));
+}
+
+.tv-notification-heal {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.9), rgba(5, 150, 105, 0.9));
+}
+
+.tv-notification-artifact {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.9), rgba(245, 158, 11, 0.9));
+}
+
+/* Panel de Historial */
+.tv-action-log {
+    position: fixed;
+    top: 90px;
+    right: 0;
+    width: 350px;
+    max-height: calc(100vh - 100px);
+    background: linear-gradient(135deg, rgba(15, 15, 35, 0.95), rgba(30, 30, 60, 0.95));
+    backdrop-filter: blur(10px);
+    border-radius: 12px 0 0 12px;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.tv-action-log.collapsed {
+    transform: translateX(350px);
+}
+
+.tv-log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: linear-gradient(135deg, var(--tv-primary-color), var(--tv-secondary-color));
+    border-radius: 12px 0 0 0;
+    color: white;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.tv-log-toggle {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.tv-log-toggle:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.tv-log-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem;
+}
+
+.tv-log-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.tv-log-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+.tv-log-content::-webkit-scrollbar-thumb {
+    background: var(--tv-accent-color);
+    border-radius: 3px;
+}
+
+.tv-log-entry {
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.5rem;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 3px solid var(--tv-accent-color);
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.9);
+    animation: fadeIn 0.3s ease;
+}
+
+.tv-log-entry-turn {
+    border-left-color: #fbbf24;
+}
+
+.tv-log-entry-hp {
+    border-left-color: #ef4444;
+}
+
+.tv-log-entry-card {
+    border-left-color: #10b981;
+}
+
+.tv-log-entry-spell {
+    border-left-color: #8b5cf6;
+}
+
+.tv-log-entry-artifact {
+    border-left-color: #fbbf24;
+}
+
+.tv-log-entry-soul {
+    border-left-color: #3b82f6;
+}
+
+.tv-log-turn {
+    color: #fbbf24;
+    font-weight: bold;
+    font-size: 0.75rem;
+}
+
+.tv-log-player {
+    color: var(--tv-accent-color);
+    font-weight: 600;
+}
+
+.tv-log-message {
+    margin-top: 0.25rem;
+}
+
+/* Botón Toggle Flotante para Historial */
+.tv-log-float-toggle {
+    position: fixed;
+    top: 100px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--tv-primary-color), var(--tv-secondary-color));
+    border: none;
+    border-radius: 50%;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tv-log-float-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* Responsive Design */
+@media (max-width: 1280px) {
+    .tv-header {
+        height: 60px;
+        padding: 0 1rem;
+    }
+    
+    .tv-player-name {
+        font-size: 1.2rem;
+    }
+    
+    .tv-hp-bar {
+        width: 100px;
+    }
+    
+    .tv-card-counter-label {
+        font-size: 0.5rem;
+    }
+    
+    .tv-artifact-image {
+        width: 30px;
+        height: 30px;
+    }
+}
+
+@media (max-width: 768px) {
+    .tv-header {
+        height: auto;
+        flex-direction: column;
+        padding: 0.5rem;
+        gap: 0.5rem;
+    }
+    
+    .tv-player-info,
+    .tv-opponent-info {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .tv-turn-info {
+        width: 100%;
+        order: -1;
+    }
+    
+    .tv-result-container {
+        min-width: 90vw;
+        padding: 1.5rem;
+    }
+    
+    .tv-action-log {
+        width: 100%;
+        max-height: 50vh;
+        border-radius: 12px 12px 0 0;
+        top: auto;
+        bottom: 0;
+    }
+    
+    .tv-action-log.collapsed {
+        transform: translateY(100%);
+    }
+    
+    .tv-notification {
+        max-width: calc(100vw - 40px);
+        right: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .tv-player-name {
+        font-size: 1rem;
+    }
+    
+    .tv-hp-bar {
+        width: 80px;
+        height: 10px;
+    }
+    
+    .tv-card-counters {
+        gap: 0.25rem;
+    }
+    
+    .tv-artifact-image {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .tv-soul-image {
+        width: 20px;
+        height: 20px;
+    }
+}
 `;
     }
 }
@@ -765,8 +1144,80 @@ class UIManager {
 
         // Crear elementos de UI
         this.createHeader();
+        this.createActionLog();
         
         console.log('[TournamentView] UI inicializada');
+    }
+
+    showFloatingNotification(message, type = 'info', duration = 3000) {
+        const notification = document.createElement('div');
+        notification.className = `tv-notification tv-notification-${type}`;
+        notification.textContent = message;
+        
+        // Calcular posición basada en notificaciones existentes
+        const existingNotifications = document.querySelectorAll('.tv-notification');
+        const offset = existingNotifications.length * 60; // 60px por notificación
+        notification.style.top = `${90 + offset}px`;
+        
+        document.body.appendChild(notification);
+        
+        // Auto-remover después del duration
+        setTimeout(() => {
+            notification.classList.add('hiding');
+            setTimeout(() => notification.remove(), 300);
+        }, duration);
+    }
+
+    createActionLog() {
+        // Botón flotante para toggle
+        const floatToggle = document.createElement('button');
+        floatToggle.className = 'tv-log-float-toggle';
+        floatToggle.innerHTML = '📜';
+        floatToggle.title = 'Toggle Historial';
+        document.body.appendChild(floatToggle);
+        this.elements.logFloatToggle = floatToggle;
+        
+        // Panel de historial
+        const logPanel = document.createElement('div');
+        logPanel.className = 'tv-action-log collapsed';
+        logPanel.innerHTML = `
+            <div class="tv-log-header">
+                <span>Historial de Acciones</span>
+                <button class="tv-log-toggle">✕</button>
+            </div>
+            <div class="tv-log-content" data-log-content></div>
+        `;
+        
+        document.body.appendChild(logPanel);
+        this.elements.actionLog = logPanel;
+        this.elements.logContent = logPanel.querySelector('[data-log-content]');
+        this.elements.logToggle = logPanel.querySelector('.tv-log-toggle');
+        
+        // Event listeners para toggle
+        floatToggle.addEventListener('click', () => this.toggleActionLog());
+        this.elements.logToggle.addEventListener('click', () => this.toggleActionLog());
+    }
+
+    toggleActionLog() {
+        this.elements.actionLog.classList.toggle('collapsed');
+    }
+
+    updateActionLog() {
+        if (!this.elements.logContent) return;
+        
+        const log = gameState.actionLog;
+        const maxVisible = 30; // Mostrar solo las últimas 30 entradas
+        
+        this.elements.logContent.innerHTML = log.slice(0, maxVisible).map(entry => {
+            const typeClass = `tv-log-entry-${entry.type}`;
+            return `
+                <div class="tv-log-entry ${typeClass}">
+                    <div class="tv-log-turn">Turno ${entry.turn}</div>
+                    <div class="tv-log-player">${entry.player}</div>
+                    <div class="tv-log-message">${entry.message}</div>
+                </div>
+            `;
+        }).join('');
     }
 
     createHeader() {
@@ -900,9 +1351,35 @@ class UIManager {
         const hpText = this.elements[`${player}HpText`];
         
         if (hpBar && hpText && data.maxHp > 0) {
+            // Calcular porcentaje y cambio
             const percentage = (data.hp / data.maxHp) * 100;
+            const oldWidth = parseFloat(hpBar.style.width) || 100;
+            const hpChange = percentage - oldWidth;
+            
+            // Actualizar barra y texto
             hpBar.style.width = `${percentage}%`;
             hpText.textContent = `${data.hp}/${data.maxHp}`;
+            
+            // Agregar animación según el tipo de cambio
+            if (hpChange < 0) {
+                // Daño recibido
+                hpBar.classList.add('hp-damage');
+                setTimeout(() => hpBar.classList.remove('hp-damage'), 500);
+                
+                // Mostrar notificación
+                const playerName = data.username || (player === 'player' ? 'Player' : 'Opponent');
+                const damage = Math.abs(Math.round(hpChange * data.maxHp / 100));
+                this.showFloatingNotification(`${playerName} recibió ${damage} de daño`, 'damage', 2500);
+            } else if (hpChange > 0) {
+                // Curación recibida
+                hpBar.classList.add('hp-heal');
+                setTimeout(() => hpBar.classList.remove('hp-heal'), 500);
+                
+                // Mostrar notificación
+                const playerName = data.username || (player === 'player' ? 'Player' : 'Opponent');
+                const heal = Math.round(hpChange * data.maxHp / 100);
+                this.showFloatingNotification(`${playerName} sanó ${heal} HP`, 'heal', 2500);
+            }
         }
     }
 
@@ -942,10 +1419,14 @@ class UIManager {
                     const img = document.createElement('img');
                     img.src = imageUrl;
                     img.alt = typeof player.soul === 'string' ? player.soul : player.soul.name;
+                    img.className = 'tv-soul-image';
                     img.style.width = '24px';
                     img.style.height = '24px';
                     img.style.objectFit = 'contain';
                     img.style.filter = 'drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8))';
+                    
+                    // Agregar atributo data para poder identificarlo
+                    img.setAttribute(`data-${playerType}-soul`, 'true');
                     
                     // Si la imagen falla, mostrar texto
                     img.onerror = () => {
@@ -994,10 +1475,16 @@ class UIManager {
                         const img = document.createElement('img');
                         img.src = imageUrl;
                         img.alt = artifact.name || 'Artifact';
+                        img.className = 'tv-artifact-image';
                         img.style.width = '36px';
                         img.style.height = '36px';
                         img.style.objectFit = 'contain';
                         img.style.filter = 'drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.9))';
+                        
+                        // Agregar atributo data para identificarlo
+                        if (artifact.id) {
+                            img.setAttribute('data-artifact-id', artifact.id);
+                        }
                         
                         // Si la imagen falla, mostrar texto
                         img.onerror = () => {
@@ -1476,6 +1963,11 @@ plugin.events.on('getTurnStart', (data) => {
     console.log(`[TournamentView] Turno ${gameState.turn} iniciado`);
     console.log(`[TournamentView] IDs - Player: ${gameState.player.id}, Opponent: ${gameState.opponent.id}, Current: ${gameState.currentPlayer}`);
     
+    // Agregar al historial
+    const activePlayerName = gameState.currentPlayer === gameState.player.id ? gameState.player.username : gameState.opponent.username;
+    gameState.addAction('turn', activePlayerName, `Turno ${gameState.turn} iniciado`);
+    uiManager.updateActionLog();
+    
     // Actualizar indicador de turno activo
     uiManager.updateActivePlayer();
     
@@ -1514,12 +2006,26 @@ plugin.events.on('getTurnStart', (data) => {
 plugin.events.on('getUpdatePlayerHp', (data) => {
     if (!isEnabled.value() || !gameState.isActive) return;
 
-    if (data.playerId === gameState.player.id) {
+    const isPlayer = data.playerId === gameState.player.id;
+    const playerData = isPlayer ? gameState.player : gameState.opponent;
+    const oldHp = playerData.hp;
+    
+    if (isPlayer) {
         gameState.updatePlayer({ hp: data.hp, maxHp: data.maxHp });
         uiManager.updateHP('player');
     } else if (data.playerId === gameState.opponent.id) {
         gameState.updateOpponent({ hp: data.hp, maxHp: data.maxHp });
         uiManager.updateHP('opponent');
+    }
+    
+    // Agregar al historial el cambio de HP
+    const newHp = data.hp;
+    const hpChange = newHp - oldHp;
+    if (hpChange !== 0) {
+        const playerName = playerData.username || (isPlayer ? 'Player' : 'Opponent');
+        const message = hpChange < 0 ? `perdió ${Math.abs(hpChange)} HP` : `ganó ${hpChange} HP`;
+        gameState.addAction('hp', playerName, message);
+        uiManager.updateActionLog();
     }
     
     console.log('[TournamentView] HP actualizado:', data);
@@ -1708,6 +2214,11 @@ plugin.events.on('getCardBoard', (data) => {
         const card = JSON.parse(data.card);
         const playerName = data.idPlayer === gameState.player.id ? gameState.player.username : gameState.opponent.username;
         console.log(`[TournamentView] ${playerName} jugó: ${card.name}`);
+        
+        // Notificación y historial
+        uiManager.showFloatingNotification(`${playerName} jugó ${card.name}`, 'card', 3000);
+        gameState.addAction('card', playerName, `jugó ${card.name}`);
+        uiManager.updateActionLog();
     } catch (error) {
         console.error('[TournamentView] Error parseando carta:', error);
     }
@@ -1721,6 +2232,11 @@ plugin.events.on('getSpellPlayed', (data) => {
         const card = JSON.parse(data.card);
         const playerName = data.idPlayer === gameState.player.id ? gameState.player.username : gameState.opponent.username;
         console.log(`[TournamentView] ${playerName} usó hechizo: ${card.name}`);
+        
+        // Notificación y historial
+        uiManager.showFloatingNotification(`${playerName} usó ${card.name}`, 'spell', 3000);
+        gameState.addAction('spell', playerName, `usó hechizo ${card.name}`);
+        uiManager.updateActionLog();
     } catch (error) {
         console.error('[TournamentView] Error parseando hechizo:', error);
     }
@@ -1731,6 +2247,11 @@ plugin.events.on('getMonsterDestroyed', (data) => {
     if (!isEnabled.value() || !gameState.isActive) return;
     
     console.log('[TournamentView] Monstruo destruido, ID:', data.monsterId);
+    
+    // Notificación y historial
+    uiManager.showFloatingNotification('Monstruo destruido', 'damage', 2000);
+    gameState.addAction('monster', 'Sistema', 'Monstruo destruido');
+    uiManager.updateActionLog();
 });
 
 // Evento: Actualización del alma
@@ -1764,6 +2285,20 @@ plugin.events.on('Log:ARTIFACT_EFFECT', (data) => {
         
         console.log(`[TournamentView] ${playerName} activó artefacto: ${artifactName}`);
         
+        // Notificación y historial
+        uiManager.showFloatingNotification(`${playerName} activó ${artifactName}`, 'artifact', 3000);
+        gameState.addAction('artifact', playerName, `activó ${artifactName}`);
+        uiManager.updateActionLog();
+        
+        // Agregar efecto glow al artefacto si se puede encontrar
+        if (data.artifactActor && data.artifactActor.id) {
+            const artifactImages = document.querySelectorAll(`.tv-artifact-image[data-artifact-id="${data.artifactActor.id}"]`);
+            artifactImages.forEach(img => {
+                img.classList.add('artifact-glow');
+                setTimeout(() => img.classList.remove('artifact-glow'), 1200);
+            });
+        }
+        
         if (data.targetCards && data.targetCards.length > 0) {
             console.log('[TournamentView] Afectó a cartas:', data.targetCards.length);
         }
@@ -1780,10 +2315,24 @@ plugin.events.on('Log:SOUL_EFFECT', (data) => {
     if (!isEnabled.value() || !gameState.isActive) return;
 
     try {
-        const playerName = data.playerId === gameState.player.id ? gameState.player.username : gameState.opponent.username;
-        const soulName = data.playerId === gameState.player.id ? gameState.player.soul : gameState.opponent.soul;
+        const isPlayer = data.playerId === gameState.player.id;
+        const playerName = isPlayer ? gameState.player.username : gameState.opponent.username;
+        const soulName = isPlayer ? gameState.player.soul : gameState.opponent.soul;
         
         console.log(`[TournamentView] ${playerName} activó efecto del alma: ${soulName}`);
+        
+        // Notificación y historial
+        uiManager.showFloatingNotification(`${playerName} activó efecto de alma`, 'info', 2500);
+        gameState.addAction('soul', playerName, `activó efecto de ${soulName}`);
+        uiManager.updateActionLog();
+        
+        // Agregar efecto glow al alma
+        const soulSelector = isPlayer ? '[data-player-soul]' : '[data-opponent-soul]';
+        const soulImage = document.querySelector(soulSelector);
+        if (soulImage) {
+            soulImage.classList.add('soul-glow');
+            setTimeout(() => soulImage.classList.remove('soul-glow'), 1000);
+        }
     } catch (error) {
         console.error('[TournamentView] Error procesando efecto del alma:', error);
     }
