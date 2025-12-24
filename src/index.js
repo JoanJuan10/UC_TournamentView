@@ -1445,7 +1445,8 @@ class UIManager {
 
     parseLogEntry(entry) {
         const text = entry.textContent || '';
-        const html = entry.innerHTML || '';
+        // Usar outerHTML en lugar de innerHTML para obtener el contenido completo
+        const html = entry.outerHTML || '';
         
         // Detectar tipo de entrada
         let type = 'info';
@@ -1485,20 +1486,33 @@ class UIManager {
             return;
         }
         
-        // Generar HTML con nuestros estilos
-        this.elements.logContent.innerHTML = visibleEntries.map(entry => {
+        // Limpiar contenido anterior
+        this.elements.logContent.innerHTML = '';
+        
+        // Agregar cada entrada clonándola directamente del DOM
+        visibleEntries.forEach(entry => {
             const parsed = this.parseLogEntry(entry);
             const typeClass = `tv-log-entry-${parsed.type}`;
             
-            // Traducir el HTML si es necesario
-            const translatedHTML = this.translateLogHTML(parsed.html);
+            // Crear wrapper con nuestras clases
+            const wrapper = document.createElement('div');
+            wrapper.className = `tv-log-entry ${typeClass}`;
             
-            return `
-                <div class="tv-log-entry ${typeClass}">
-                    ${translatedHTML}
-                </div>
-            `;
-        }).join('');
+            // Clonar el contenido del elemento original (esto preserva la decodificación correcta)
+            const clonedEntry = entry.cloneNode(true);
+            
+            // Si es español, traducir el texto
+            if (i18n.currentLanguage === 'es') {
+                // Traducir usando outerHTML y luego reinsertar
+                const translatedHTML = this.translateLogHTML(clonedEntry.outerHTML);
+                wrapper.innerHTML = translatedHTML;
+            } else {
+                // Usar directamente el clon
+                wrapper.appendChild(clonedEntry);
+            }
+            
+            this.elements.logContent.appendChild(wrapper);
+        });
         
         // Scroll al final para mostrar siempre las más recientes
         setTimeout(() => {
