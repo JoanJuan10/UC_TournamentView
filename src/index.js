@@ -506,7 +506,7 @@ ${baseCSS}
     padding: 0.5rem 1rem;
     border-radius: 8px;
     backdrop-filter: blur(10px);
-    max-width: 200px;
+    flex-wrap: wrap;
 }
 
 .tv-artifacts-text {
