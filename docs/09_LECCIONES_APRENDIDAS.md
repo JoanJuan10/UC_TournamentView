@@ -173,6 +173,248 @@ class TemplateManager {
 
 ---
 
+### 6. Inicialización del Sistema i18n
+
+**Problema Crítico**: Settings intentaban usar `i18n.t()` antes de que i18n existiera.
+
+**Causa**: Al definir settings con `plugin.settings().add()`, el objeto retornado se evalúa inmediatamente, antes de que las clases globales estén inicializadas.
+
+```javascript
+// ❌ INCORRECTO - i18n aún no existe
+const isEnabled = plugin.settings().add({
+    key: 'enabled',
+    name: i18n.t('settings.enable'), // Error: i18n is not defined
+});
+
+// ✅ CORRECTO - strings literales bilingües
+const isEnabled = plugin.settings().add({
+    key: 'enabled',
+    name: 'Activar Tournament View', // Literal string
+});
+
+const languageSetting = plugin.settings().add({
+    key: 'language',
+    name: 'Idioma / Language', // Ambos idiomas explícitos
+});
+```
+
+**Solución alternativa investigada**: Intentar inicializar i18n antes de settings falló porque `plugin.settings()` se ejecuta en el top-level del script.
+
+**Lección**: Los settings API se evalúan síncronamente al cargar el script. No pueden depender de objetos que se inicializan después. Usar strings literales o valores estáticos.
+
+---
+
+### 7. Regeneración de UI al Cambiar Idioma
+
+**Desafío**: Al cambiar el idioma en settings, los textos del overlay no se actualizaban.
+
+**Primera solución (incorrecta)**: Solo verificar `gameState.isActive`:
+```javascript
+onChange: (newValue) => {
+    i18n.setLanguage(newValue);
+    if (gameState.isActive) {
+        uiManager.destroy();
+        uiManager.initialize();
+    }
+}
+```
+**Problema**: Si el usuario cambiaba idioma antes de iniciar partida, no pasaba nada.
+
+**Solución correcta**: Verificar si la UI existe:
+```javascript
+onChange: (newValue) => {
+    i18n.setLanguage(newValue);
+    
+    if (uiManager.container) {  // Verificar si UI existe
+        uiManager.destroy();
+        uiManager.initialize();
+        
+        if (gameState.isActive) {
+            uiManager.update();  // Actualizar datos si hay partida
+        }
+    }
+}
+```
+
+**Lección**: Para cambios de configuración que afectan UI, verificar si los elementos DOM existen, no solo si hay datos de juego activos.
+
+---
+
+### 8. Encoding de Caracteres HTML
+
+**Problema Complejo**: Caracteres especiales (ñ, á, é, í, ó, ú) aparecían como entidades HTML (`&ntilde;`, `&oacute;`) en el historial traducido.
+
+**Contexto**: El historial de Underscript usa HTML con entidades codificadas. Al extraer con `outerHTML` o `textContent`, las entidades no se decodificaban.
+
+**Evolución de soluciones**:
+
+1. **Intento 1**: Reemplazos manuales con regex
+   ```javascript
+   html = html.replace(/&oacute;/g, 'ó').replace(/&ntilde;/g, 'ñ');
+   ```
+   ❌ Problema: Lista enorme de entidades, no escalable
+
+2. **Intento 2**: Parser HTML nativo
+   ```javascript
+   const parser = new DOMParser();
+   const doc = parser.parseFromString(html, 'text/html');
+   return doc.body.textContent;
+   ```
+   ❌ Problema: Perdía formato HTML (negritas, colores)
+
+3. **Solución final**: Textarea temporal
+   ```javascript
+   decodeHTMLEntities(html) {
+       const textarea = document.createElement('textarea');
+       textarea.innerHTML = html;
+       return textarea.value;
+   }
+   ```
+   ✅ Funciona: El navegador decodifica automáticamente al asignar `innerHTML`
+
+**Orden de operaciones crítico**:
+```javascript
+translateLogHTML(html) {
+    // 1. Decodificar PRIMERO
+    const decodedHTML = this.decodeHTMLEntities(html);
+    
+    // 2. Traducir DESPUÉS (con caracteres reales)
+    let translatedHTML = decodedHTML.replace(/attacked/g, 'atacó');
+    
+    return translatedHTML;
+}
+```
+
+**Lección**: Para decodificar entidades HTML, usar el navegador nativo (`textarea.innerHTML`) en vez de regex o parsers. Siempre decodificar antes de aplicar transformaciones.
+
+---
+
+### 9. innerHTML vs outerHTML
+
+**Problema Sutil**: Entradas de historial aparecían en dos líneas en vez de una.
+
+**HTML original de Underscript**:
+```html
+<div class="entry">
+    <span class="player">Joan</span>'s turn
+</div>
+```
+
+**Código inicial (incorrecto)**:
+```javascript
+const clone = entry.cloneNode(true);
+wrapper.innerHTML = clone.outerHTML;  // Crea nested div
+```
+
+**Resultado en DOM**:
+```html
+<div class="tv-log-entry">
+    <div class="entry">              <!-- Div extra! -->
+        <span class="player">Joan</span>'s turn
+    </div>
+</div>
+```
+
+**Solución**:
+```javascript
+// Para español (traducido):
+wrapper.innerHTML = translatedContent;  // Solo el contenido
+
+// Para inglés (original):
+Array.from(entry.childNodes).forEach(child => {
+    wrapper.appendChild(child.cloneNode(true));  // Solo hijos
+});
+```
+
+**Lección**: 
+- `outerHTML` incluye el elemento wrapper (crea anidación)
+- `innerHTML` solo incluye el contenido interno
+- Para clonar sin wrapper, iterar sobre `childNodes`
+
+---
+
+### 10. Patrones Regex para Traducción
+
+**Desafío**: Traducir frases donde el orden de palabras cambia entre idiomas.
+
+**Ejemplo**: 
+- Inglés: "**Joan**'s turn"
+- Español: "Es el turno de **Joan**"
+
+**Primera solución (incorrecta)**:
+```javascript
+html = html.replace(/'s turn/g, ' es el turno de');
+// Resultado: "Joan es el turno de" ❌
+```
+
+**Solución correcta con capture groups**:
+```javascript
+html = html.replace(
+    /(<[^>]+>.*?<\/[^>]+>)'s turn/gi,
+    (match, playerHTML) => `Es el turno de ${playerHTML}`
+);
+// Resultado: "Es el turno de <span class="player">Joan</span>" ✅
+```
+
+**Breakdown del regex**:
+- `(<[^>]+>.*?<\/[^>]+>)` - Captura el HTML del jugador
+- `'s turn` - Texto literal a reemplazar
+- `gi` - Global e insensitive a mayúsculas
+- `(match, playerHTML) =>` - Arrow function con grupo capturado
+- `` `Es el turno de ${playerHTML}` `` - Template literal con reordenamiento
+
+**Lección**: Para traducciones que requieren reordenar elementos, usar capture groups en regex con template literals para reconstruir la frase.
+
+---
+
+### 11. Timer Watcher desde Carga Inicial
+
+**Problema**: Timer no aparecía hasta el primer `getTurnStart`, dejando el overlay con "-" durante la carga.
+
+**Causa**: `timerWatcher` solo se iniciaba en el evento `getTurnStart`, pero ese evento solo ocurre cuando empieza un turno, no en la carga inicial.
+
+**Solución multi-paso**:
+
+1. **Extraer lógica a función helper**:
+   ```javascript
+   function startTimerWatcher() {
+       if (timerWatcher) clearInterval(timerWatcher);
+       timerWatcher = setInterval(() => {
+           // Lógica de lectura del timer
+       }, 500);
+   }
+   ```
+
+2. **Llamar desde evento `connect`** (primera conexión):
+   ```javascript
+   plugin.events.on('connect', (data) => {
+       // ... parsear datos ...
+       startTimerWatcher();  // ← Iniciar aquí
+   });
+   ```
+
+3. **Mantener llamada en `getTurnStart`** (para reiniciar):
+   ```javascript
+   plugin.events.on('getTurnStart', (data) => {
+       // ... actualizar turno ...
+       startTimerWatcher();  // ← Reiniciar por seguridad
+   });
+   ```
+
+4. **Añadir fallback en selector**:
+   ```javascript
+   // Intenta .timer.active primero
+   const timerElement = document.querySelector('.timer.active');
+   if (!timerElement) {
+       // Fallback: cualquier .timer
+       const anyTimer = document.querySelector('.timer');
+   }
+   ```
+
+**Lección**: Para datos que deben estar disponibles desde el inicio, inicializar en el primer evento que recibe datos (`connect`), no en eventos específicos de gameplay (`getTurnStart`).
+
+---
+
 ## 🏗️ Lecciones de Arquitectura
 
 ### 1. Separación de Responsabilidades
@@ -241,6 +483,75 @@ getArtifactImageUrl(artifact)
 - Reutilizables desde múltiples eventos
 - Fácil agregar fallbacks
 - Testing individual de cada extractor
+
+---
+
+### 4. Sistema de Traducciones con Interpolación
+
+**Decisión Arquitectónica**: Crear clase `I18n` con sistema de interpolación de parámetros.
+
+```javascript
+class I18n {
+    t(key, params = {}) {
+        let translation = this.translations[this.currentLanguage][key];
+        
+        // Interpolación de parámetros
+        Object.entries(params).forEach(([param, value]) => {
+            translation = translation.replace(`{${param}}`, value);
+        });
+        
+        return translation;
+    }
+}
+
+// Uso:
+i18n.t('turn.indicator', { player: 'Joan' });
+// ES: "Es el turno de Joan"
+// EN: "Joan's turn"
+```
+
+**Ventajas**:
+- Frases dinámicas sin concatenación
+- Reordenamiento natural por idioma
+- Fácil añadir parámetros
+
+**Patrón identificado**:
+- Keys anidadas con puntos: `notification.cardPlayed`
+- Parámetros en llaves: `{player}`, `{card}`, `{damage}`
+- Un diccionario por idioma
+
+**Lección**: Para sistemas multiidioma, usar interpolación de parámetros en vez de concatenación de strings. Permite flexibilidad en el orden de palabras por idioma.
+
+---
+
+### 5. Funciones Helper Reutilizables
+
+**Patrón identificado**: Extraer lógica repetida a funciones globales.
+
+**Ejemplo - Timer Watcher**:
+```javascript
+// Antes: Código duplicado en dos eventos
+plugin.events.on('getTurnStart', () => {
+    if (timerWatcher) clearInterval(timerWatcher);
+    timerWatcher = setInterval(() => { /* ... */ }, 500);
+});
+
+// Después: Función helper reutilizable
+function startTimerWatcher() {
+    if (timerWatcher) clearInterval(timerWatcher);
+    timerWatcher = setInterval(() => { /* ... */ }, 500);
+}
+
+plugin.events.on('connect', () => startTimerWatcher());
+plugin.events.on('getTurnStart', () => startTimerWatcher());
+```
+
+**Beneficios**:
+- DRY (Don't Repeat Yourself)
+- Un solo lugar para corregir bugs
+- Más fácil añadir logging/debugging
+
+**Lección**: Si escribes el mismo código en múltiples lugares, extraerlo a una función helper. Especialmente útil para lógica de inicialización.
 
 ---
 
@@ -437,17 +748,32 @@ function getArtifactsFromDOM(playerIndex) {
 **Tiempo estimado por fase**:
 - Fase 1 (setup): ~4 horas
 - Fase 2 (implementación): ~12 horas
+- Fase 3 (mejoras visuales e i18n): ~16 horas
+  - Sistema i18n: ~4 horas
+  - Traducción de historial: ~6 horas
+  - Bugs de encoding: ~3 horas
+  - Ajustes UX: ~3 horas
 - Debugging crítico (settings): ~2 horas
-- Documentación: ~3 horas
+- Documentación: ~4 horas
 
-**Total**: ~21 horas de desarrollo
+**Total**: ~38 horas de desarrollo
 
-**Bugs críticos encontrados**: 5
+**Bugs críticos encontrados**: 15+
 1. Timer no sincronizaba
 2. Indicador de turno incorrecto
 3. Almas con 404
 4. Contadores de artefactos vacíos
 5. Settings no desactivaba (el más crítico)
+6. Settings usando i18n antes de inicialización
+7. Cambio de idioma no regeneraba UI
+8. Panel historial no se ocultaba
+9. Solo 4 artefactos visibles
+10. Scroll no mostraba entradas recientes
+11. Traducciones con orden incorrecto
+12. Caracteres especiales como entidades HTML
+13. Entradas en dos líneas
+14. Timer no visible al cargar
+15. Selector de timer incorrecto
 
 **Lecciones por bug**: Cada bug llevó a una mejora arquitectónica:
 1. → Sistema de polling
@@ -455,6 +781,23 @@ function getArtifactsFromDOM(playerIndex) {
 3. → Extracción desde DOM
 4. → Lectura de `.artifact-custom`
 5. → Comprensión de function getters
+6. → Strings literales en settings
+7. → Verificación de `uiManager.container`
+8. → Ajuste de `translateX` a 450px
+9. → Remoción de `max-width`, añadir `flex-wrap`
+10. → Cambio a `scrollTop = scrollHeight`
+11. → Regex con capture groups
+12. → Helper `decodeHTMLEntities()`
+13. → Uso de `innerHTML` vs `outerHTML`
+14. → Función `startTimerWatcher()` reutilizable
+15. → Fallback de `.timer.active` a `.timer`
+
+**Fase 3 - Estadísticas**:
+- Líneas de código añadidas: ~930
+- Claves de traducción: 17+ por idioma
+- Patrones regex implementados: 10+
+- Bugs corregidos: 10
+- Tamaño del build: +18 KiB (39 → 57 KiB)
 
 ---
 
@@ -498,23 +841,78 @@ function getArtifactsFromDOM(playerIndex) {
 
 ## 💡 Consejos para Nuevos Desarrolladores
 
-1. **Lee la documentación primero** - Los 7 docs de `/docs` tienen toda la info necesaria.
+1. **Lee la documentación primero** - Los docs en `/docs` tienen toda la info necesaria.
 
-2. **Usa console.log generosamente** - Especialmente con prefijos para filtrar.
+2. **Usa console.log generosamente** - Especialmente con prefijos `[TournamentView]` para filtrar.
 
 3. **Inspecciona el DOM real** - No asumas la estructura, verifica con DevTools.
 
-4. **Prueba los settings** - Activa/desactiva varias veces para verificar cleanup.
+4. **Verifica tipos siempre** - Usa `typeof`, `console.dir()`, nunca asumas.
 
-5. **npm start es tu amigo** - Watch mode ahorra mucho tiempo.
+5. **Prueba los settings** - Activa/desactiva varias veces para verificar cleanup.
 
-6. **Commits frecuentes** - Haz commits pequeños y descriptivos.
+6. **npm start es tu amigo** - Watch mode ahorra mucho tiempo.
 
-7. **No asumas tipos** - Usa `typeof`, `console.dir()` y `console.log()`.
+7. **Commits frecuentes** - Haz commits pequeños y descriptivos.
 
-8. **Fallbacks siempre** - DOM puede cambiar, ten planes B y C.
+8. **No asumas tipos** - Usa `typeof`, `console.dir()` y `console.log()`.
+
+9. **Fallbacks siempre** - DOM puede cambiar, ten planes B y C.
+
+10. **Testea multiidioma** - Si implementas i18n, prueba en todos los idiomas soportados.
+
+11. **innerHTML vs outerHTML** - Conoce la diferencia, evita nested elements innecesarios.
+
+12. **Regex con cuidado** - Para traducciones complejas, usa capture groups y test online (regex101.com).
+
+13. **Decodifica antes de transformar** - Si trabajas con HTML, decodifica entidades primero.
+
+14. **Funciones helper** - Extrae código repetido a funciones reutilizables.
+
+15. **Verifica existencia de elementos** - Antes de manipular DOM, verifica que existe con `if (element)`.
 
 ---
 
-*Documento compilado: 24 de diciembre de 2025*  
-*Autor: JoanJuan10*
+## 🎯 Fase 3 - Resumen de Mejoras
+
+**Sistema Multiidioma (i18n)**:
+- ✅ Clase I18n con interpolación de parámetros
+- ✅ Soporte ES/EN con 17+ claves por idioma
+- ✅ Setting de idioma con regeneración automática de UI
+- ✅ Traducción de historial con regex patterns
+- ✅ Decodificación de entidades HTML
+
+**Ajustes Visuales y UX**:
+- ✅ Ocultación de historiales nativos
+- ✅ Aumento de fuentes para legibilidad
+- ✅ Display ilimitado de artefactos
+- ✅ Posición del tablero ajustada 100px
+- ✅ Timer visible desde carga inicial
+- ✅ Auto-scroll en historial
+
+**Bugs Corregidos**:
+- ✅ Settings usando i18n antes de inicialización
+- ✅ Cambio de idioma no regeneraba UI
+- ✅ Panel historial no se ocultaba
+- ✅ Solo 4 artefactos visibles
+- ✅ Scroll no mostraba recientes
+- ✅ Traducciones con orden incorrecto
+- ✅ Caracteres especiales como HTML entities
+- ✅ Entradas en dos líneas
+- ✅ Timer no visible al cargar
+- ✅ Selector de timer incorrecto
+
+**Lecciones Clave**:
+1. Settings no pueden usar objetos inicializados después
+2. Verificar existencia de UI (`container`), no solo datos activos
+3. Decodificar HTML entities con `textarea.innerHTML`
+4. `innerHTML` vs `outerHTML` para evitar anidación
+5. Regex capture groups para reordenar frases
+6. Inicializar en `connect` para datos desde carga inicial
+7. Funciones helper para código reutilizable
+
+---
+
+*Documento actualizado: 24 de diciembre de 2025*  
+*Autor: JoanJuan10*  
+*Fase 3 completada: Sistema multiidioma y mejoras visuales*

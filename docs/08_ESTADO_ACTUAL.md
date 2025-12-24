@@ -240,16 +240,137 @@ class GameState {
 - ✅ Text shadows para legibilidad
 - ✅ Box shadows con inset highlights
 
+### 9. Sistema Multiidioma (i18n)
+
+**Fase 3 - Internacionalización completa:**
+
+**Clase I18n:**
+```javascript
+class I18n {
+    constructor() {
+        this.currentLanguage = 'es';
+        this.translations = {
+            es: { /* 17+ claves */ },
+            en: { /* 17+ claves */ }
+        };
+    }
+    
+    t(key, params = {}) {
+        let translation = this.translations[this.currentLanguage][key];
+        // Interpolación: "Es el turno de {player}" + {player: "Joan"}
+        Object.entries(params).forEach(([param, value]) => {
+            translation = translation.replace(`{${param}}`, value);
+        });
+        return translation;
+    }
+}
+```
+
+**Claves de traducción implementadas:**
+- `player.default` / `player.opponent` - Nombres por defecto
+- `hp` / `gold` / `hand` / `deck` / `graveyard` - Estadísticas
+- `turn` / `timer` / `turn.indicator` - Información de turno
+- `result.victory` / `result.defeat` - Resultados
+- `stats.turns` / `stats.finalHp` - Estadísticas finales
+- `notification.*` - 6 tipos de notificaciones
+- `history.*` - Panel de historial
+
+**Setting de idioma:**
+- ✅ Selector dropdown con opciones `['es', 'en']`
+- ✅ `onChange` handler que regenera UI completa:
+  - Llama `i18n.setLanguage(newValue)`
+  - Ejecuta `uiManager.destroy()` y `uiManager.initialize()`
+  - Si hay partida activa, actualiza todos los datos
+- ✅ Persiste entre recargas de página
+- ✅ Inicialización en evento `:preload` antes de crear UI
+
+**Traducción de historial de acciones:**
+
+**Función `translateLogHTML()`:**
+- ✅ Solo traduce si idioma actual es español
+- ✅ Decodifica entidades HTML con `decodeHTMLEntities()`
+- ✅ Patrones de traducción implementados:
+  - `"'s turn"` → `"Es el turno de {player}"` (reorganización de frase)
+  - `">>> Turn X"` → `">>> Turno X"`
+  - `"played"` → `"jugó"`
+  - `"used"` → `"usó"`
+  - `"attacked"` → `"atacó a"`
+  - `"was killed"` → `"fue destruido/a"`
+  - `"lost X hp"` → `"perdió X hp"`
+  - `"gained X hp"` → `"ganó X hp"`
+  - `"'s effect activated"` → `": efecto activado"`
+  - `"'s soul activated"` → `": alma activada"`
+
+**Manejo de entidades HTML:**
+```javascript
+decodeHTMLEntities(html) {
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = html;
+    return textarea.value;
+}
+```
+- ✅ Decodifica `&oacute;` → `ó`, `&ntilde;` → `ñ`, etc.
+- ✅ Usa elemento DOM temporal para decodificación nativa del navegador
+- ✅ Aplicado antes de realizar traducciones
+
+**Actualización del historial:**
+- ✅ Para español: usa `innerHTML` y aplica `translateLogHTML()`
+- ✅ Para inglés: clona `childNodes` directamente preservando encoding nativo
+- ✅ Evita doble línea usando `innerHTML` en vez de `outerHTML`
+
+### 10. Ajustes Visuales y UX
+
+**Ocultación de historiales nativos:**
+```css
+#history {
+    display: none !important;
+}
+
+#game-history {
+    display: none !important;
+}
+```
+
+**Aumento de tamaños de fuente:**
+- ✅ `.tv-notification`: 1.1rem (antes 1rem)
+- ✅ `.tv-notification` padding: 1rem 1.5rem (mejor legibilidad)
+- ✅ `.tv-notification` max-width: 400px (mejor distribución)
+- ✅ `.tv-action-log`: width 450px (antes 350px)
+- ✅ `.tv-log-header`: 1.2rem (antes 1.1rem)
+- ✅ `.tv-log-entry`: 1.1rem con line-height 1.8
+
+**Display de artefactos:**
+- ✅ Removido `max-width: 200px` de `.tv-player-artifacts`
+- ✅ Añadido `flex-wrap: wrap` para múltiples filas
+- ✅ Ahora muestra artefactos ilimitados en vez de solo 4
+
+**Posición del tablero:**
+```css
+/* TABLERO DE JUEGO - Ajuste de posición */
+.mainContent {
+    margin-top: 100px !important;
+}
+```
+- ✅ Bajado 100px para mejor visualización con overlay
+- ✅ Documentado para Fase 4 (gestión en plantillas):
+  - Elementos gestionables: avatares, perfiles, board, timer, handCards, emotes
+  - Propiedades configurables: margin-top, transform scale, opacity, filters
+
+**Timer visible desde inicio:**
+- ✅ `startTimerWatcher()` función helper reutilizable
+- ✅ Se inicia en evento `connect` (carga inicial de página)
+- ✅ Se reinicia en evento `getTurnStart` (seguridad)
+- ✅ Busca `.timer.active` primero, fallback a `.timer` genérico
+- ✅ Lee contenido de `<span class="white">` dentro del timer
+- ✅ Polling cada 500ms con soporte para `window.global('time')`
+
+**Auto-scroll en historial:**
+- ✅ Scroll a `scrollHeight` para mostrar entradas más recientes
+- ✅ `setTimeout` de 100ms para asegurar render del DOM
+
 ---
 
 ## 🚧 Pendiente / En Desarrollo
-
-### Próximas mejoras (Fase 3)
-- [ ] Animaciones de transición más suaves
-- [ ] Panel de historial de acciones
-- [ ] Efectos visuales para eventos importantes
-- [ ] Mejoras en responsive design para pantallas pequeñas
-- [ ] Temas de color alternativos
 
 ### Gestión de plantillas (Fase 4)
 - [ ] Importar plantillas personalizadas (JSON)
@@ -304,21 +425,85 @@ class GameState {
   3. Llamar `removeCSS()` en el listener de cambios
 - **Estado**: Resuelto ✅
 
+### ✅ Settings usando i18n antes de inicialización
+- **Problema**: Settings intentaban usar `i18n.t()` antes de que i18n existiera
+- **Solución**: Usar strings literales bilingües en settings: "Activar Tournament View", "Idioma / Language"
+- **Estado**: Resuelto ✅
+
+### ✅ Cambio de idioma no regeneraba UI
+- **Problema**: Al cambiar idioma en settings, el overlay mantenía textos antiguos
+- **Solución**: En `onChange` de languageSetting, verificar si existe `uiManager.container` y llamar `destroy()/initialize()`
+- **Estado**: Resuelto ✅
+
+### ✅ Panel de historial no se ocultaba completamente
+- **Problema**: Panel se quedaba parcialmente visible al colapsar
+- **Solución**: Cambiar `translateX(350px)` a `translateX(450px)` para que coincida con el width del panel
+- **Estado**: Resuelto ✅
+
+### ✅ Solo 4 artefactos visibles
+- **Problema**: `max-width: 200px` limitaba artefactos mostrados
+- **Solución**: Remover max-width y añadir `flex-wrap: wrap` para múltiples filas
+- **Estado**: Resuelto ✅
+
+### ✅ Scroll del historial no mostraba entradas recientes
+- **Problema**: `scrollTop = 0` mostraba entradas antiguas en vez de nuevas
+- **Solución**: Cambiar a `scrollTop = scrollHeight` con `setTimeout(100ms)`
+- **Estado**: Resuelto ✅
+
+### ✅ Traducciones incorrectas en turnos
+- **Problema**: "Player es el turno de" en vez de "Es el turno de Player"
+- **Solución**: Regex con capture groups para reorganizar: `/<[^>]+>.*?<\/[^>]+>)'s turn/` → `Es el turno de ${playerHTML}`
+- **Estado**: Resuelto ✅
+
+### ✅ Caracteres especiales mostrando entidades HTML
+- **Problema**: `&oacute;`, `&ntilde;` aparecían literalmente en vez de `ó`, `ñ`
+- **Solución**: 
+  1. Aplicar `decodeHTMLEntities()` antes de traducir
+  2. Usar `innerHTML` en vez de `outerHTML` para evitar nested divs
+  3. Clonar `childNodes` directamente para inglés
+- **Estado**: Resuelto ✅
+
+### ✅ Entradas de turno en dos líneas
+- **Problema**: `outerHTML` creaba divs anidados causando saltos de línea
+- **Solución**: Usar `innerHTML` para obtener solo el contenido sin wrapper
+- **Estado**: Resuelto ✅
+
+### ✅ Timer no visible al cargar página
+- **Problema**: `timerWatcher` solo iniciaba en `getTurnStart`, no en carga inicial
+- **Solución**: 
+  1. Crear función `startTimerWatcher()` reutilizable
+  2. Llamarla desde evento `connect` (carga inicial)
+  3. Llamarla también desde `getTurnStart` (seguridad)
+  4. Añadir fallback de `.timer.active` a `.timer` genérico
+- **Estado**: Resuelto ✅
+
 ---
 
 ## 📊 Métricas del Código
 
 **Archivos principales:**
-- `src/index.js`: ~1800 líneas
-- `dist/tournamentview.user.js`: ~39 KiB compilado
+- `src/index.js`: ~2730 líneas (+930 desde Fase 2)
+- `dist/tournamentview.user.js`: ~57 KiB compilado (+18 KiB desde Fase 2)
 
 **Clases principales:**
+- `I18n`: ~90 líneas (nueva en Fase 3)
 - `GameState`: ~80 líneas
-- `TemplateManager`: ~460 líneas
+- `TemplateManager`: ~490 líneas (+30 desde Fase 2)
 - `UIManager`: ~700 líneas
 
-**Eventos manejados:** 15 eventos de UnderScript
-**Funciones helper:** 6 funciones de extracción de DOM
+**Sistemas implementados:**
+- Eventos manejados: 15 eventos de UnderScript
+- Funciones helper: 7 funciones (6 extracción DOM + 1 timer)
+- Idiomas soportados: 2 (español, inglés)
+- Claves de traducción: 17+ por idioma
+- Patrones de traducción regex: 10+ patrones
+
+**Fase 3 específicamente:**
+- Sistema i18n completo
+- Traducción de historial con regex
+- Decodificación de entidades HTML
+- 10+ bugs corregidos
+- Ajustes de UX y legibilidad
 
 ---
 
