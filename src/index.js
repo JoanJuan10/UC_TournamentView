@@ -1917,12 +1917,19 @@ const languageSetting = plugin.settings().add({
     default: 'es',
     data: ['es', 'en'],
     onChange: (newValue) => {
+        console.log('[TournamentView] Cambiando idioma a:', newValue);
         i18n.setLanguage(newValue);
+        
         // Si hay UI activa, regenerarla con el nuevo idioma
-        if (uiManager.container && gameState.isActive) {
+        if (uiManager.container) {
+            console.log('[TournamentView] Regenerando UI con nuevo idioma');
             uiManager.destroy();
-            uiManager.create();
-            uiManager.update();
+            uiManager.initialize();
+            
+            // Si hay una partida activa, actualizar todos los datos
+            if (gameState.isActive) {
+                uiManager.update();
+            }
         }
     }
 });
