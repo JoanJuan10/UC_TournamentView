@@ -18,6 +18,9 @@ class I18n {
                 'ui.noActions': 'Sin acciones registradas aún',
                 'ui.totalTurns': 'Turnos totales:',
                 'ui.finalHP': 'HP Final:',
+                'ui.hand': 'Mano',
+                'ui.deck': 'Mazo',
+                'ui.graveyard': 'Cementerio',
                 
                 // Game Results
                 'result.victory': '¡VICTORIA!',
@@ -50,6 +53,9 @@ class I18n {
                 'ui.noActions': 'No actions recorded yet',
                 'ui.totalTurns': 'Total Turns:',
                 'ui.finalHP': 'Final HP:',
+                'ui.hand': 'Hand',
+                'ui.deck': 'Deck',
+                'ui.graveyard': 'Graveyard',
                 
                 // Game Results
                 'result.victory': 'VICTORY!',
@@ -1461,15 +1467,15 @@ class UIManager {
             </div>
             <div class="tv-player-cards">
                 <div class="tv-card-counter">
-                    <div class="tv-card-counter-label">Mano</div>
+                    <div class="tv-card-counter-label">${i18n.t('ui.hand')}</div>
                     <div class="tv-card-counter-value" data-hand="player">0</div>
                 </div>
                 <div class="tv-card-counter">
-                    <div class="tv-card-counter-label">Mazo</div>
+                    <div class="tv-card-counter-label">${i18n.t('ui.deck')}</div>
                     <div class="tv-card-counter-value" data-deck="player">0</div>
                 </div>
                 <div class="tv-card-counter">
-                    <div class="tv-card-counter-label">Cementerio</div>
+                    <div class="tv-card-counter-label">${i18n.t('ui.graveyard')}</div>
                     <div class="tv-card-counter-value" data-graveyard="player">0</div>
                 </div>
             </div>
@@ -1480,7 +1486,7 @@ class UIManager {
         centerInfo.className = 'tv-center-info';
         centerInfo.innerHTML = `
             <div class="tv-turn-indicator">
-                <div class="tv-turn-label">Turno</div>
+                <div class="tv-turn-label">${i18n.t('ui.turn')}</div>
                 <div class="tv-turn-number" data-turn>0</div>
                 <div class="tv-turn-timer" data-timer>-</div>
             </div>
@@ -1508,15 +1514,15 @@ class UIManager {
             </div>
             <div class="tv-player-cards">
                 <div class="tv-card-counter">
-                    <div class="tv-card-counter-label">Mano</div>
+                    <div class="tv-card-counter-label">${i18n.t('ui.hand')}</div>
                     <div class="tv-card-counter-value" data-hand="opponent">0</div>
                 </div>
                 <div class="tv-card-counter">
-                    <div class="tv-card-counter-label">Mazo</div>
+                    <div class="tv-card-counter-label">${i18n.t('ui.deck')}</div>
                     <div class="tv-card-counter-value" data-deck="opponent">0</div>
                 </div>
                 <div class="tv-card-counter">
-                    <div class="tv-card-counter-label">Cementerio</div>
+                    <div class="tv-card-counter-label">${i18n.t('ui.graveyard')}</div>
                     <div class="tv-card-counter-value" data-graveyard="opponent">0</div>
                 </div>
             </div>
