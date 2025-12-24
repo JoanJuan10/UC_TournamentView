@@ -1392,6 +1392,12 @@ class UIManager {
         this.elements.actionLog.classList.toggle('collapsed');
     }
 
+    decodeHTMLEntities(text) {
+        const textarea = document.createElement('textarea');
+        textarea.innerHTML = text;
+        return textarea.value;
+    }
+
     translateLogHTML(html) {
         // Solo traducir si el idioma es español
         if (i18n.currentLanguage !== 'es') {
