@@ -1463,9 +1463,9 @@ class UIManager {
         // Obtener todas las entradas (divs directos de #log)
         const entries = Array.from(underscriptLog.children);
         
-        // Mostrar las últimas 50 entradas (en orden cronológico, más recientes al final)
+        // Mostrar las últimas 50 entradas (orden inverso, más recientes primero)
         const maxVisible = 50;
-        const visibleEntries = entries.slice(-maxVisible);
+        const visibleEntries = entries.slice(-maxVisible).reverse();
         
         if (visibleEntries.length === 0) {
             this.elements.logContent.innerHTML = `<div class="tv-log-entry tv-log-entry-info">${i18n.t('ui.noActions')}</div>`;
@@ -1487,8 +1487,8 @@ class UIManager {
             `;
         }).join('');
         
-        // Scroll al final (acciones más recientes abajo)
-        this.elements.logContent.scrollTop = this.elements.logContent.scrollHeight;
+        // Scroll al inicio (más recientes arriba)
+        this.elements.logContent.scrollTop = 0;
     }
 
     createHeader() {
