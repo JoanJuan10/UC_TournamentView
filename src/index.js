@@ -1913,12 +1913,9 @@ const languageSetting = plugin.settings().add({
     key: 'language',
     name: 'Idioma / Language',
     description: 'Seleccionar idioma de la interfaz / Select interface language',
-    type: 'dropdown',
-    options: [
-        { value: 'es', text: 'Español' },
-        { value: 'en', text: 'English' }
-    ],
+    type: 'select',
     default: 'es',
+    data: ['es', 'en'],
     onChange: (newValue) => {
         i18n.setLanguage(newValue);
         // Si hay UI activa, regenerarla con el nuevo idioma
@@ -1967,13 +1964,20 @@ isEnabled.on('change', (newValue) => {
 
 // Evento principal de carga
 plugin.events.on(':preload', () => {
-    console.log('[TournamentView] :preload - isEnabled.value():', isEnabled.value());
-    
-    // Inicializar idioma desde configuración
-    const savedLanguage = languageSetting.value();
-    if (savedLanguage) {
-        i18n.setLanguage(savedLanguage);
+    // Inicializar idioma desde configuración (antes de cualquier otra cosa)
+    try {
+        const savedLanguage = languageSetting.value();
+        if (savedLanguage) {
+            i18n.setLanguage(savedLanguage);
+            console.log('[TournamentView] Idioma inicializado:', savedLanguage);
+        } else {
+            console.log('[TournamentView] No hay idioma guardado, usando default: es');
+        }
+    } catch (e) {
+        console.error('[TournamentView] Error inicializando idioma:', e);
     }
+    
+    console.log('[TournamentView] :preload - isEnabled.value():', isEnabled.value());
     
     if (!isEnabled.value()) {
         console.log('[TournamentView] Plugin DESACTIVADO - No se iniciará');
