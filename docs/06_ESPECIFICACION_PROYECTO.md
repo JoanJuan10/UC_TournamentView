@@ -1,10 +1,10 @@
 # 06 - Especificación del Proyecto UC_TournamentView
 
-> Actualizado: 24 de diciembre de 2025 - Estado: Beta Funcional
+> Actualizado: 24 de diciembre de 2025 - Estado: Sistema de Plantillas Completo (Fase 4 ✅)
 
-Especificación técnica completa del plugin UC_TournamentView, incluyendo arquitectura, sistema de plantillas y diseño de la plantilla "Esports Moderno".
+Especificación técnica completa del plugin UC_TournamentView, incluyendo arquitectura, sistema de plantillas avanzado y diseño de plantillas visuales.
 
-**⚠️ Nota**: Este documento describe la especificación original del proyecto. Para ver el estado actual de implementación, consulta [08_ESTADO_ACTUAL.md](08_ESTADO_ACTUAL.md).
+**✅ Nota**: La Fase 4 (Sistema de Plantillas) está completamente implementada. Ver [11_FASE4_RESUMEN.md](11_FASE4_RESUMEN.md) para detalles completos.
 
 ## 📋 Índice
 
@@ -28,22 +28,31 @@ Transformar la página de espectador (`/Spectate?gameId=XXX&playerId=YYY`) de Un
 
 ### Estado Actual
 
-✅ **Beta Funcional**: El overlay básico está completamente implementado y operativo. Ver [08_ESTADO_ACTUAL.md](08_ESTADO_ACTUAL.md) para detalles completos.
+✅ **Fase 4 Completada**: Sistema completo de gestión de plantillas implementado y funcional. Ver [11_FASE4_RESUMEN.md](11_FASE4_RESUMEN.md) para detalles completos.
 
 **Implementado**:
 - ✅ Overlay de información en tiempo real
 - ✅ Sistema de plantillas con CSS variables
+- ✅ **3 plantillas predefinidas (Default, Minimal, Esports)**
+- ✅ **Sistema de gestión avanzado con categoría independiente**
+- ✅ **Importar/Exportar plantillas personalizadas**
+- ✅ **Validación robusta de plantillas**
+- ✅ **Persistencia en localStorage**
 - ✅ Extracción de datos del DOM
 - ✅ Settings funcional (activar/desactivar)
 - ✅ Timer sincronizado
 - ✅ Indicador de turno activo
 - ✅ Overlay de resultados
+- ✅ Sistema multiidioma (ES/EN)
+- ✅ Animaciones mejoradas y notificaciones
+- ✅ Panel de historial colapsable
+- ✅ Diseño responsive
 
-**Pendiente**:
-- 📦 Importar/Exportar plantillas (Fase 4)
-- 🎨 Múltiples plantillas predefinidas (Fase 4)
-- 🎬 Animaciones mejoradas (Fase 3)
-- ⚙️ Editor visual de plantillas (Fase 4)
+**Futuras Mejoras**:
+- 🎨 Editor visual de plantillas (Fase 5)
+- 🌐 Galería de plantillas comunitarias
+- ⚙️ Plantillas dinámicas con hooks JavaScript
+- 🎬 Animaciones avanzadas personalizables
 
 ### Alcance
 
@@ -51,9 +60,11 @@ Transformar la página de espectador (`/Spectate?gameId=XXX&playerId=YYY`) de Un
 |----------|-------------------------|
 | ✅ Vista Spectate | ❌ Vista Game (jugador) |
 | ✅ Overlays visuales | ❌ Modificar mecánicas |
-| ✅ Sistema de plantillas base | ❌ Integración con torneos externos |
-| 📦 Importar/Exportar plantillas (futuro) | ❌ Streaming directo |
-| ✅ Información existente en la web | ❌ Datos externos |
+| ✅ Sistema de plantillas completo | ❌ Integración con torneos externos |
+| ✅ Importar/Exportar plantillas | ❌ Streaming directo |
+| ✅ 3 plantillas predefinidas | ❌ Datos externos |
+| ✅ Gestión avanzada de plantillas | ❌ Editor visual (futuro) |
+| ✅ Información existente en la web | |
 
 ### Requisitos Técnicos
 
@@ -80,23 +91,31 @@ UC_TournamentView
 │   ├── Settings Manager
 │   └── Event Handlers
 │
-├── Template System (Futuro)
-│   ├── Template Loader
-│   ├── Template Parser
+├── Template System ✅ (Implementado)
+│   ├── TemplateManager (18 métodos)
+│   ├── Template Loader (predefinidas + custom)
+│   ├── Template Parser & Validator
 │   ├── Import/Export Manager
-│   └── CSS Injector
+│   ├── CSS Injector (plugin.addStyle)
+│   └── localStorage Persistence
 │
-├── UI Components (Futuro)
-│   ├── Header Bar (nombres, HP)
-│   ├── Score Panel (marcadores)
-│   ├── Turn Indicator
-│   ├── Action Log
+├── Settings UI ✅ (Implementado)
+│   ├── FakeSetting (base class)
+│   ├── TemplateElement (gestión por plantilla)
+│   ├── FileInputElement (importar)
+│   └── Categoría "Plantillas"
+│
+├── UI Components ✅ (Implementado)
+│   ├── Header Bar (nombres, HP, souls, artifacts)
+│   ├── Turn Indicator & Timer
+│   ├── Action Log (historial colapsable)
+│   ├── Notificaciones flotantes
 │   └── Victory/Defeat Overlay
 │
-└── Data Layer (Futuro)
-    ├── Player State
-    ├── Game State
-    └── Template Storage
+└── Data Layer ✅ (Implementado)
+    ├── GameState (player, opponent, turn)
+    ├── UIManager (update methods)
+    └── Template Storage (localStorage)
 ```
 
 ### Estructura de Archivos

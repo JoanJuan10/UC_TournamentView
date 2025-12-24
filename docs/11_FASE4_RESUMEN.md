@@ -1,10 +1,11 @@
 # 📦 Fase 4 - Resumen de Implementación Completa
 
-## Estado: ✅ COMPLETADA
+## Estado: ✅ COMPLETADA Y MEJORADA
 
 **Fecha:** 24 de diciembre de 2025  
 **Versión:** 0.1.0  
-**Build Size:** 84.3 KiB (fue 60.8 KiB → +23.5 KiB con sistema completo de plantillas)
+**Build Size:** 88.6 KiB (fue 60.8 KiB → +27.8 KiB con sistema completo de plantillas y gestión avanzada)  
+**Última actualización:** 24 de diciembre de 2025 - Sistema de gestión de plantillas mejorado
 
 ---
 
@@ -15,7 +16,11 @@
 ✅ Importación/Exportación de plantillas personalizadas  
 ✅ Validación robusta de plantillas importadas  
 ✅ Persistencia en localStorage  
-✅ Selector en settings con regeneración automática de UI  
+✅ **Sistema de gestión avanzado con categoría independiente**  
+✅ **Cada plantilla con controles individuales (activar, exportar, eliminar)**  
+✅ **Iconos minimalistas con glyphicons de Bootstrap**  
+✅ **Actualización dinámica de la lista de plantillas**  
+✅ **Protección de plantillas predefinidas (no eliminables)**  
 ✅ Documentación completa para usuarios y desarrolladores  
 
 ---
@@ -23,20 +28,16 @@
 ## 📁 Archivos Modificados/Creados
 
 ### Código Principal
-- **src/index.js** (134 KiB source)
+- **src/index.js** (145 KiB source)
   - TemplateManager completamente refactorizado (~1200 líneas)
+  - Sistema de gestión de plantillas con tipos personalizados (~300 líneas)
   - 3 métodos de creación de plantillas (Default, Minimal, Esports)
-  - Settings con selector, botón exportar, botón importar
+  - Settings con categoría "Plantillas" separada
+  - Tipos personalizados FakeSetting, TemplateElement, FileInputElement
   - Traducciones para ES/EN
 
-### Documentación
-- **docs/10_FASE4_PLANTILLAS.md** - Arquitectura técnica completa
-- **docs/TESTING_GUIDE.md** - Guía de pruebas exhaustiva
-- **docs/example_template.json** - Plantilla de ejemplo personalizable
-- **README.md** - Sección completa sobre sistema de plantillas
-
 ### Build Output
-- **dist/tournamentview.user.js** (84.3 KiB)
+- **dist/tournamentview.user.js** (88.6 KiB)
 - **dist/tournamentview.meta.js** (775 bytes)
 
 ---
@@ -52,7 +53,7 @@
 - customTemplates: []     // Plantillas importadas por el usuario
 ```
 
-#### Métodos Principales (15 total)
+#### Métodos Principales (18 total)
 
 **Registro y Carga:**
 - `registerTemplate(template)` - Valida y registra una plantilla
@@ -63,6 +64,9 @@
 - `setActiveTemplate(templateId)` - Cambia la plantilla activa
 - `getTemplateById(id)` - Busca plantilla por ID
 - `listTemplates()` - Lista metadata de todas las plantillas
+- `getAllTemplateIds()` - **NUEVO** Devuelve array de IDs de plantillas
+- `getActiveTemplateId()` - **NUEVO** Devuelve ID de plantilla activa
+- `deleteTemplate(templateId)` - **NUEVO** Elimina plantilla custom
 
 **Import/Export:**
 - `exportTemplate(templateId)` - Serializa a JSON
@@ -71,7 +75,7 @@
 
 **Persistencia:**
 - `saveCustomTemplate(template)` - Guarda en localStorage
-- `deleteCustomTemplate(templateId)` - Elimina de localStorage
+- `saveCustomTemplates()` - **NUEVO** Guarda array completo en localStorage
 
 **CSS:**
 - `injectCSS()` - Inyecta CSS de plantilla activa
@@ -130,6 +134,139 @@
 ---
 
 ## 🔧 Settings Implementados
+
+### Sistema de Gestión Avanzado (v2 - Mejorado)
+
+**Implementado el 24 de diciembre de 2025**
+
+El sistema de settings ha sido completamente rediseñado siguiendo el patrón de `uc_replays.js` para proporcionar una experiencia de usuario superior.
+
+#### Categoría "Plantillas"
+
+Sección independiente en la configuración de UnderScript que agrupa toda la gestión de plantillas.
+
+#### Tipos Personalizados de Settings
+
+**1. FakeSetting (Base Class)**
+```javascript
+class FakeSetting extends underscript.utils.SettingType {
+    value(val) { return val; }
+    encode(value) { return value; }
+    default() { return undefined; }
+}
+```
+
+**2. TemplateElement**
+- **Tipo:** `TournamentView:templateElement`
+- **Propósito:** Control individual por plantilla
+- **Renderizado:** Spans con glyphicons (siguiendo patrón de uc_replays)
+- **Alineación:** `labelFirst() = false` → Iconos a la derecha del nombre
+- **Concatenación:** Usa `.add()` de jQuery para unir elementos
+
+**Iconos:**
+- ⭐ **Activar**: Estrella llena (verde) si activa, vacía (gris) si no
+  - Glyphicon: `glyphicon-star` / `glyphicon-star-empty`
+  - Título: "Plantilla activa" / "Activar plantilla"
+  - Color: `#5cb85c` (verde) / `#999` (gris)
+  
+- 💾 **Exportar**: Icono de descarga (azul)
+  - Glyphicon: `glyphicon-download-alt`
+  - Título: "Exportar plantilla"
+  - Color: `#337ab7` (azul Bootstrap)
+  
+- 🗑️ **Eliminar**: Icono de papelera (rojo)
+  - Glyphicon: `glyphicon-trash`
+  - Título: "Eliminar plantilla"
+  - Color: `#d9534f` (rojo Bootstrap)
+  - **Solo visible en plantillas custom**
+
+**3. FileInputElement**
+- **Tipo:** `TournamentView:fileInputElement`
+- **Propósito:** Importar plantillas desde archivo
+- **Accept:** `.json`, `application/json`
+- **Handler:** FileReader con `readAsText()`
+- **Proceso directo:** Lee archivo dentro del elemento, no usa onChange
+
+#### Flujo de Eventos
+
+**Patrón de uc_replays.js:**
+```javascript
+// En element():
+.on('click', e => update('activate'))  // String directo, no objeto
+
+// En onChange():
+onChange: (action, oldValue) => {
+    if (!action) return;
+    templateSettings[key].set(undefined);  // Reset inmediato
+    
+    if (action === 'activate') { ... }
+    else if (action === 'export') { ... }
+    else if (action === 'delete') { ... }
+}
+```
+
+**Ventajas del patrón:**
+- ✅ Strings simples en lugar de objetos
+- ✅ Reset inmediato con `.set(undefined)`
+- ✅ No hay problemas de serialización
+- ✅ Compatible con sistema de UnderScript
+
+#### Gestión Dinámica de Plantillas
+
+**Función `refreshTemplateSettings()`**
+- Se llama al inicializar y después de importar/eliminar
+- Crea/actualiza settings dinámicamente para cada plantilla
+- Usa `templateManager.templates` directamente (no `listTemplates()`)
+- Mantiene referencia en `templateSettings{}` object
+
+**Protección de plantillas predefinidas:**
+```javascript
+const predefinedTemplateIds = ['default', 'minimal', 'esports'];
+const canDelete = !predefinedTemplateIds.includes(templateId);
+```
+
+#### Integración con UI
+
+**Activación de plantilla:**
+1. Usuario hace click en icono de estrella
+2. `update('activate')` llamado
+3. `onChange` recibe 'activate'
+4. Llama `activateTemplate(templateId)`
+5. `setActiveTemplate()` + `injectCSS()`
+6. Destruye y regenera UI completa
+7. Restaura datos de partida activa
+8. Llama `refreshTemplateSettings()` para actualizar iconos
+
+**Exportación:**
+1. Click en icono de descarga
+2. `exportTemplate(templateId)` genera JSON
+3. Crea Blob y trigger download
+4. Archivo: `template_{id}_{timestamp}.json`
+5. Alert de confirmación
+
+**Importación:**
+1. Usuario selecciona archivo
+2. FileReader lee contenido
+3. `importTemplate(json)` valida y registra
+4. Activa plantilla automáticamente
+5. Llama `refreshTemplateSettings()` para agregar a lista
+6. Alert de confirmación
+
+**Eliminación:**
+1. Click en icono de papelera
+2. Confirmación con `confirm()`
+3. Si es activa → cambia a 'default'
+4. `deleteTemplate(templateId)` elimina
+5. Remueve setting del DOM
+6. Delete de `templateSettings{}`
+7. Alert de confirmación
+
+### Settings Previos (v1 - Obsoleto)
+
+> ⚠️ **Nota**: Los settings v1 con dropdown único fueron reemplazados por el sistema de gestión avanzado v2.
+
+<details>
+<summary>Ver configuración anterior (histórico)</summary>
 
 ### 1. Selector de Plantilla
 - **Tipo:** `select`
@@ -288,12 +425,13 @@ Las variables se inyectan en `:root` con prefijo `--tv-` y conversión a kebab-c
 - **Templates:** 1 (hardcoded)
 - **Settings:** 2 (enabled, language)
 
-### Después de Fase 4
-- **Build Size:** 84.3 KiB (+38.6%)
-- **Source Size:** ~134 KiB (+26.4%)
+### Después de Fase 4 (v2 - Sistema Mejorado)
+- **Build Size:** 88.6 KiB (+45.7%)
+- **Source Size:** ~145 KiB (+36.8%)
 - **Templates:** 3 predefinidas + N custom
-- **Settings:** 5 (enabled, language, template, export, import)
-- **Nuevas líneas de código:** ~2500
+- **Settings:** Categoría "Plantillas" con gestión avanzada
+- **Tipos personalizados:** 3 (FakeSetting, TemplateElement, FileInputElement)
+- **Nuevas líneas de código:** ~3000
 
 ### Desglose de Código Añadido
 - TemplateManager methods: ~500 líneas
@@ -378,6 +516,150 @@ Las variables se inyectan en `:root` con prefijo `--tv-` y conversión a kebab-c
 ### Desarrollador/Diseñador
 1. **Crear plantillas custom:** Usar example_template.json como base
 2. **Experimentar con estilos:** CSS completo personalizable
+
+---
+
+## 🐛 Problemas Resueltos Durante Implementación
+
+### 1. Selector mostrando "[object Object]"
+**Problema:** El selector inicial mostraba objetos en lugar de nombres.  
+**Causa:** Intentaba usar objetos complejos como valores en el select.  
+**Solución:** Cambiar a array simple de strings con IDs de plantillas.
+
+### 2. onChange no ejecutándose
+**Problema:** Al cambiar la plantilla no sucedía nada.  
+**Causa:** Conflicto con sistema de UnderScript.  
+**Solución:** Simplificar flujo de eventos y usar strings directos.
+
+### 3. CSS no aplicándose visualmente
+**Problema:** La plantilla cambiaba internamente pero no visualmente.  
+**Causa:** Usaba `cssElement.textContent` en lugar de `cssElement.replace()`.  
+**Solución:** `plugin.addStyle()` retorna objeto con método `replace()`, no elemento DOM.
+
+### 4. Imágenes de souls/artifacts desapareciendo
+**Problema:** Al cambiar plantilla, las imágenes desaparecían.  
+**Causa:** No se restauraban los datos después de regenerar UI.  
+**Solución:** Agregada lógica completa de restauración de datos en `activateTemplate()`.
+
+### 5. Nombres de jugadores desapareciendo
+**Problema:** Similar al anterior pero con nombres.  
+**Causa:** Faltaba llamar a `updatePlayerNames()`.  
+**Solución:** Agregada llamada en restauración de datos.
+
+### 6. Error "e.text is not a function"
+**Problema:** Al importar archivo, error en lectura.  
+**Causa:** `file.text()` no disponible en todos los navegadores.  
+**Solución:** Usar `FileReader` con `readAsText()` para compatibilidad.
+
+### 7. Botones de gestión no funcionando
+**Problema:** Clicks en botones solo generaban logs.  
+**Causa:** Usaba botones en lugar de spans, objetos en lugar de strings.  
+**Solución:** Seguir patrón exacto de uc_replays.js:
+- Usar spans con glyphicons
+- `.add()` para concatenar
+- `update(string)` en lugar de `update(object)`
+- `onChange(action, oldValue)` con strings
+- `.set(undefined)` inmediato
+
+### 8. Plantillas importadas sin botón de eliminar
+**Problema:** No aparecía icono de papelera en plantillas custom.  
+**Causa:** Error en detección de plantillas predefinidas.  
+**Solución:** Comparación correcta con array `predefinedTemplateIds`.
+
+### 9. Error "Cannot read properties of undefined (reading 'id')"
+**Problema:** Al listar plantillas, error al acceder a metadata.  
+**Causa:** `listTemplates()` retornaba objetos simplificados sin estructura completa.  
+**Solución:** Usar `templateManager.templates` directamente en `refreshTemplateSettings()`.
+
+### 10. Iconos no alineados verticalmente
+**Problema:** Iconos aparecían en diferentes posiciones.  
+**Causa:** `labelFirst() = true` ponía iconos a la izquierda.  
+**Solución:** `labelFirst() = false` alinea iconos a la derecha, como en uc_replays.
+
+---
+
+## 📋 Checklist de Implementación
+
+### Core Functionality
+- [x] TemplateManager refactorizado
+- [x] Sistema multi-plantilla
+- [x] 3 plantillas predefinidas
+- [x] Variables CSS con inyección dinámica
+- [x] Validación de estructura
+- [x] Import/Export JSON
+- [x] localStorage persistence
+- [x] Sistema de gestión avanzado con tipos personalizados
+- [x] Categoría "Plantillas" independiente
+- [x] Controles individuales por plantilla
+- [x] Protección de plantillas predefinidas
+- [x] Actualización dinámica de lista
+
+### Settings UI
+- [x] Categoría "Plantillas"
+- [x] Tipo personalizado TemplateElement
+- [x] Tipo personalizado FileInputElement
+- [x] Iconos con glyphicons
+- [x] Tooltips informativos
+- [x] Confirmaciones para eliminar
+- [x] Alerts de feedback
+- [x] Integración con i18n
+
+### Traducciones
+- [x] Español completo
+- [x] Inglés completo
+- [x] Keys en i18n para todos los textos
+
+### Documentación
+- [x] 10_FASE4_PLANTILLAS.md (arquitectura)
+- [x] 11_FASE4_RESUMEN.md (este documento)
+- [x] TESTING_GUIDE.md (guía de pruebas)
+- [x] example_template.json (plantilla de ejemplo)
+- [x] README.md actualizado
+
+### Testing
+- [x] Cambio de plantilla funciona
+- [x] CSS se aplica correctamente
+- [x] Datos se restauran después de cambio
+- [x] Export descarga JSON válido
+- [x] Import valida y activa correctamente
+- [x] Plantillas custom se guardan en localStorage
+- [x] Plantillas predefinidas no se pueden eliminar
+- [x] Botones de gestión funcionan
+- [x] Iconos se actualizan dinámicamente
+
+---
+
+## 🚀 Próximas Mejoras (Futuras Fases)
+
+### Editor Visual de Plantillas
+- Interfaz gráfica para crear/editar plantillas
+- Color pickers para variables
+- Preview en tiempo real
+- Sin necesidad de editar JSON
+
+### Galería de Plantillas Comunitarias
+- Repositorio de plantillas compartidas
+- Sistema de rating/comentarios
+- Descarga con un click
+- Tags y categorías
+
+### Plantillas Dinámicas con Hooks
+- JavaScript personalizado
+- Animaciones custom
+- Efectos de sonido
+- Integración con eventos del juego
+
+### Plantillas Responsivas Avanzadas
+- Múltiples layouts por dispositivo
+- Breakpoints configurables
+- Orientación (portrait/landscape)
+- Optimización automática
+
+---
+
+*Documento actualizado: 24 de diciembre de 2025 - 15:45*  
+*Versión del documento: 2.0*  
+*Sistema de gestión: v2 (mejorado)*
 3. **Contribuir:** Crear plantillas para la comunidad
 
 ---
