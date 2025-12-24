@@ -1404,7 +1404,9 @@ class UIManager {
             return html;
         }
 
-        let translatedHTML = html;
+        // Primero decodificar entidades HTML
+        const decodedHTML = this.decodeHTMLEntities(html);
+        let translatedHTML = decodedHTML;
 
         // Primero, manejar el caso especial de "'s turn" - requiere reorganizar la frase
         // Buscar el patrón completo: <cualquier cosa>'s turn
@@ -1416,7 +1418,7 @@ class UIManager {
         // Patrones de traducción (inglés → español)
         const translations = [
             // Turnos
-            { pattern: /&gt;&gt;&gt; Turn (\d+)/g, replacement: '&gt;&gt;&gt; Turno $1' },
+            { pattern: />>> Turn (\d+)/g, replacement: '>>> Turno $1' },
             
             // Acciones de cartas
             { pattern: / played /g, replacement: ' jugó ' },
@@ -1498,17 +1500,16 @@ class UIManager {
             const wrapper = document.createElement('div');
             wrapper.className = `tv-log-entry ${typeClass}`;
             
-            // Clonar el contenido del elemento original (esto preserva la decodificación correcta)
-            const clonedEntry = entry.cloneNode(true);
-            
-            // Si es español, traducir el texto
+            // Si es español, traducir el contenido
             if (i18n.currentLanguage === 'es') {
-                // Traducir usando outerHTML y luego reinsertar
-                const translatedHTML = this.translateLogHTML(clonedEntry.outerHTML);
-                wrapper.innerHTML = translatedHTML;
+                // Obtener el innerHTML (contenido interno sin el div padre)
+                const translatedContent = this.translateLogHTML(entry.innerHTML);
+                wrapper.innerHTML = translatedContent;
             } else {
-                // Usar directamente el clon
-                wrapper.appendChild(clonedEntry);
+                // Clonar el contenido interno directamente
+                Array.from(entry.childNodes).forEach(child => {
+                    wrapper.appendChild(child.cloneNode(true));
+                });
             }
             
             this.elements.logContent.appendChild(wrapper);
