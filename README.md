@@ -22,6 +22,12 @@ El plugin cuenta con un overlay completo y funcional que muestra toda la informa
   - Turno actual y timer en formato M:SS
   - Indicador visual de jugador activo
 
+- ✅ **Sistema multiidioma**
+  - Soporte para Español e Inglés
+  - Configuración de idioma en settings
+  - Traducciones completas de UI y notificaciones
+  - Cambio de idioma en tiempo real
+
 - ✅ **Sistema de plantillas base** - Estructura CSS con variables personalizables
 - ✅ **Extracción de datos del DOM** - Lectura robusta de almas, artefactos y contadores
 - ✅ **Overlay de resultados** - Pantalla de victoria/derrota con estadísticas
@@ -218,10 +224,17 @@ Este proyecto sigue el [template oficial de UCProjects](https://github.com/UCPro
   - [x] Botón flotante para toggle
   - [x] Categorización por tipo de evento
   - [x] Auto-scroll a nuevas entradas
+  - [x] Integración con historial nativo de Underscript
 - [x] Responsive design con 3 breakpoints
   - [x] 1280px: Layout compacto
   - [x] 768px: Layout vertical
   - [x] 480px: Optimizado para móviles
+- [x] Sistema multiidioma (i18n)
+  - [x] Soporte para Español e Inglés
+  - [x] Configuración de idioma en settings
+  - [x] 17 claves de traducción por idioma
+  - [x] Sistema de interpolación de parámetros
+  - [x] Regeneración automática de UI al cambiar idioma
 
 ### Fase 4 - Gestión de Plantillas (Pendiente)
 - [ ] Importar/Exportar plantillas personalizadas
