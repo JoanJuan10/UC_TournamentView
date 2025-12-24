@@ -713,17 +713,17 @@ ${baseCSS}
     position: fixed;
     top: 90px;
     right: 20px;
-    padding: 0.75rem 1.25rem;
-    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
     color: white;
-    font-weight: 500;
-    font-size: 0.9rem;
+    font-weight: 600;
+    font-size: 1.1rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     z-index: 10001;
     animation: slideInRight 0.3s ease forwards;
     margin-bottom: 10px;
     backdrop-filter: blur(10px);
-    max-width: 300px;
+    max-width: 400px;
     word-wrap: break-word;
 }
 
@@ -760,7 +760,7 @@ ${baseCSS}
     position: fixed;
     top: 90px;
     right: 0;
-    width: 350px;
+    width: 450px;
     max-height: calc(100vh - 100px);
     background: linear-gradient(135deg, rgba(15, 15, 35, 0.95), rgba(30, 30, 60, 0.95));
     backdrop-filter: blur(10px);
@@ -829,23 +829,23 @@ ${baseCSS}
 }
 
 .tv-log-entry {
-    padding: 0.5rem 0.75rem;
-    margin-bottom: 0.5rem;
+    padding: 0.65rem 0.9rem;
+    margin-bottom: 0.6rem;
     border-radius: 6px;
     background: rgba(255, 255, 255, 0.05);
     border-left: 3px solid var(--tv-accent-color);
-    font-size: 0.85rem;
+    font-size: 1rem;
     color: rgba(255, 255, 255, 0.9);
     animation: fadeIn 0.3s ease;
-    line-height: 1.6;
+    line-height: 1.7;
 }
 
 /* Estilos para el contenido HTML de Underscript dentro de las entradas */
 .tv-log-entry img {
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
     vertical-align: middle;
-    margin: 0 2px;
+    margin: 0 3px;
     display: inline-block;
 }
 
