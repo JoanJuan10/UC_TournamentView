@@ -2008,6 +2008,36 @@ const uiManager = new UIManager();
 // Timer watcher
 let timerWatcher = null;
 
+// Función helper para iniciar el observador del timer
+function startTimerWatcher() {
+    if (timerWatcher) clearInterval(timerWatcher);
+    
+    timerWatcher = setInterval(() => {
+        try {
+            // Intentar obtener tiempo del global del juego
+            const time = window.global ? window.global('time') : null;
+            if (time !== null && time !== undefined) {
+                uiManager.updateTimer(Math.max(0, time));
+            } else {
+                // Fallback: intentar leer del DOM
+                const timerElement = document.querySelector('.timer');
+                if (timerElement && timerElement.textContent) {
+                    const timeText = timerElement.textContent.trim();
+                    const timeParts = timeText.split(':');
+                    if (timeParts.length === 2) {
+                        const minutes = parseInt(timeParts[0]) || 0;
+                        const seconds = parseInt(timeParts[1]) || 0;
+                        const totalSeconds = minutes * 60 + seconds;
+                        uiManager.updateTimer(totalSeconds);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('[TournamentView] Error leyendo timer:', error);
+        }
+    }, 500); // Actualizar cada 500ms
+}
+
 // ============================================
 // SETTINGS
 // ============================================
@@ -2295,6 +2325,9 @@ plugin.events.on('connect', (data) => {
         uiManager.updateCards('opponent');
         uiManager.updateTurn();
         uiManager.updateActivePlayer();
+        
+        // Iniciar observador del timer desde el principio
+        startTimerWatcher();
     } catch (error) {
         console.error('[TournamentView] Error parseando datos de conexión:', error);
     }
@@ -2347,33 +2380,8 @@ plugin.events.on('getTurnStart', (data) => {
     // Actualizar indicador de turno activo
     uiManager.updateActivePlayer();
     
-    // Iniciar observador del timer del DOM del juego
-    if (timerWatcher) clearInterval(timerWatcher);
-    
-    timerWatcher = setInterval(() => {
-        try {
-            // Intentar obtener tiempo del global del juego
-            const time = window.global ? window.global('time') : null;
-            if (time !== null && time !== undefined) {
-                uiManager.updateTimer(Math.max(0, time));
-            } else {
-                // Fallback: intentar leer del DOM
-                const timerElement = document.querySelector('.timer');
-                if (timerElement && timerElement.textContent) {
-                    const timeText = timerElement.textContent.trim();
-                    const timeParts = timeText.split(':');
-                    if (timeParts.length === 2) {
-                        const minutes = parseInt(timeParts[0]) || 0;
-                        const seconds = parseInt(timeParts[1]) || 0;
-                        const totalSeconds = minutes * 60 + seconds;
-                        uiManager.updateTimer(totalSeconds);
-                    }
-                }
-            }
-        } catch (error) {
-            console.error('[TournamentView] Error leyendo timer:', error);
-        }
-    }, 500); // Actualizar cada 500ms
+    // Reiniciar observador del timer (ya debería estar corriendo, pero lo reiniciamos por seguridad)
+    startTimerWatcher();
     
     uiManager.updateTurn();
 });
