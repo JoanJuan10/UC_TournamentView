@@ -44,8 +44,6 @@ class GameState {
         this.turn = 0;
         this.currentPlayer = null;
         this.gameResult = null; // 'victory', 'defeat', or null
-        this.actionLog = []; // Historial de acciones
-        this.maxLogEntries = 50; // Máximo de entradas
     }
 
     updatePlayer(data) {
@@ -84,22 +82,6 @@ class GameState {
             currentPlayer: this.currentPlayer,
             gameResult: this.gameResult,
         };
-    }
-
-    addAction(type, player, message, data = {}) {
-        this.actionLog.unshift({
-            timestamp: Date.now(),
-            turn: this.turn,
-            type: type,
-            player: player,
-            message: message,
-            data: data,
-        });
-        
-        // Limitar el tamaño del log
-        if (this.actionLog.length > this.maxLogEntries) {
-            this.actionLog.pop();
-        }
     }
 }
 
@@ -742,30 +724,95 @@ ${baseCSS}
     font-size: 0.85rem;
     color: rgba(255, 255, 255, 0.9);
     animation: fadeIn 0.3s ease;
+    line-height: 1.6;
+}
+
+/* Estilos para el contenido HTML de Underscript dentro de las entradas */
+.tv-log-entry img {
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+    margin: 0 2px;
+    display: inline-block;
+}
+
+.tv-log-entry span {
+    vertical-align: middle;
+}
+
+.tv-log-entry span[style*="text-decoration: underline"] {
+    color: #fbbf24;
+    font-weight: 500;
+}
+
+/* Clases de almas de Underscript */
+.tv-log-entry .DETERMINATION {
+    color: #ff0000;
+}
+
+.tv-log-entry .BRAVERY {
+    color: #ff8800;
+}
+
+.tv-log-entry .JUSTICE {
+    color: #ffff00;
+}
+
+.tv-log-entry .KINDNESS {
+    color: #00ff00;
+}
+
+.tv-log-entry .PATIENCE {
+    color: #00ffff;
+}
+
+.tv-log-entry .INTEGRITY {
+    color: #0000ff;
+}
+
+.tv-log-entry .PERSEVERANCE {
+    color: #ff00ff;
 }
 
 .tv-log-entry-turn {
     border-left-color: #fbbf24;
+    background: rgba(251, 191, 36, 0.1);
+    font-weight: bold;
 }
 
 .tv-log-entry-hp {
     border-left-color: #ef4444;
+    background: rgba(239, 68, 68, 0.08);
+}
+
+.tv-log-entry-heal {
+    border-left-color: #10b981;
+    background: rgba(16, 185, 129, 0.08);
 }
 
 .tv-log-entry-card {
     border-left-color: #10b981;
+    background: rgba(16, 185, 129, 0.05);
 }
 
 .tv-log-entry-spell {
     border-left-color: #8b5cf6;
+    background: rgba(139, 92, 246, 0.08);
 }
 
 .tv-log-entry-artifact {
     border-left-color: #fbbf24;
+    background: rgba(251, 191, 36, 0.08);
 }
 
 .tv-log-entry-soul {
     border-left-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.08);
+}
+
+.tv-log-entry-damage {
+    border-left-color: #dc2626;
+    background: rgba(220, 38, 38, 0.08);
 }
 
 .tv-log-turn {
@@ -1196,28 +1243,98 @@ class UIManager {
         // Event listeners para toggle
         floatToggle.addEventListener('click', () => this.toggleActionLog());
         this.elements.logToggle.addEventListener('click', () => this.toggleActionLog());
+        
+        // Actualizar historial inicialmente
+        this.updateActionLog();
+        
+        // Observar cambios en el historial de Underscript
+        this.setupLogObserver();
+    }
+
+    setupLogObserver() {
+        // Buscar el elemento #log de Underscript
+        const underscriptLog = document.querySelector('#history #log');
+        
+        if (underscriptLog) {
+            // Crear MutationObserver para detectar cambios
+            this.logObserver = new MutationObserver(() => {
+                this.updateActionLog();
+            });
+            
+            // Observar cambios en childList (nuevas entradas)
+            this.logObserver.observe(underscriptLog, {
+                childList: true,
+                subtree: false
+            });
+            
+            console.log('[TournamentView] Observando historial de Underscript');
+        } else {
+            console.warn('[TournamentView] No se encontró #history #log de Underscript');
+            // Reintentar en 2 segundos
+            setTimeout(() => this.setupLogObserver(), 2000);
+        }
     }
 
     toggleActionLog() {
         this.elements.actionLog.classList.toggle('collapsed');
     }
 
+    parseLogEntry(entry) {
+        const text = entry.textContent || '';
+        const html = entry.innerHTML || '';
+        
+        // Detectar tipo de entrada
+        let type = 'info';
+        if (text.includes('Turn')) type = 'turn';
+        else if (text.includes('lost') && text.includes('hp')) type = 'hp';
+        else if (text.includes('gained') && text.includes('hp')) type = 'heal';
+        else if (text.includes('played')) type = 'card';
+        else if (text.includes('used')) type = 'spell';
+        else if (text.includes('activated')) type = 'artifact';
+        else if (text.includes('attacked')) type = 'damage';
+        else if (text.includes('killed')) type = 'damage';
+        else if (text.includes('soul activated')) type = 'soul';
+        
+        return { html, text, type };
+    }
+
     updateActionLog() {
         if (!this.elements.logContent) return;
         
-        const log = gameState.actionLog;
-        const maxVisible = 30; // Mostrar solo las últimas 30 entradas
+        // Leer entradas del historial de Underscript
+        const underscriptLog = document.querySelector('#history #log');
         
-        this.elements.logContent.innerHTML = log.slice(0, maxVisible).map(entry => {
-            const typeClass = `tv-log-entry-${entry.type}`;
+        if (!underscriptLog) {
+            this.elements.logContent.innerHTML = '<div class="tv-log-entry tv-log-entry-info">Esperando historial del juego...</div>';
+            return;
+        }
+        
+        // Obtener todas las entradas (divs directos de #log)
+        const entries = Array.from(underscriptLog.children);
+        
+        // Mostrar las últimas 50 entradas (orden inverso, más recientes primero)
+        const maxVisible = 50;
+        const visibleEntries = entries.slice(-maxVisible).reverse();
+        
+        if (visibleEntries.length === 0) {
+            this.elements.logContent.innerHTML = '<div class="tv-log-entry tv-log-entry-info">Sin acciones registradas aún</div>';
+            return;
+        }
+        
+        // Generar HTML con nuestros estilos
+        this.elements.logContent.innerHTML = visibleEntries.map(entry => {
+            const parsed = this.parseLogEntry(entry);
+            const typeClass = `tv-log-entry-${parsed.type}`;
+            
             return `
                 <div class="tv-log-entry ${typeClass}">
-                    <div class="tv-log-turn">Turno ${entry.turn}</div>
-                    <div class="tv-log-player">${entry.player}</div>
-                    <div class="tv-log-message">${entry.message}</div>
+                    ${parsed.html}
                 </div>
             `;
         }).join('');
+        
+        // Scroll al principio (más reciente)
+        this.elements.logContent.scrollTop = 0;
     }
 
     createHeader() {
@@ -1656,6 +1773,21 @@ class UIManager {
             this.container.remove();
         }
         this.container = null;
+        
+        // Desconectar observer del historial
+        if (this.logObserver) {
+            this.logObserver.disconnect();
+            this.logObserver = null;
+        }
+        
+        // Remover botón flotante y panel de historial
+        if (this.elements.logFloatToggle) {
+            this.elements.logFloatToggle.remove();
+        }
+        if (this.elements.actionLog) {
+            this.elements.actionLog.remove();
+        }
+        
         this.elements = {};
     }
 }
@@ -1963,11 +2095,6 @@ plugin.events.on('getTurnStart', (data) => {
     console.log(`[TournamentView] Turno ${gameState.turn} iniciado`);
     console.log(`[TournamentView] IDs - Player: ${gameState.player.id}, Opponent: ${gameState.opponent.id}, Current: ${gameState.currentPlayer}`);
     
-    // Agregar al historial
-    const activePlayerName = gameState.currentPlayer === gameState.player.id ? gameState.player.username : gameState.opponent.username;
-    gameState.addAction('turn', activePlayerName, `Turno ${gameState.turn} iniciado`);
-    uiManager.updateActionLog();
-    
     // Actualizar indicador de turno activo
     uiManager.updateActivePlayer();
     
@@ -2006,26 +2133,12 @@ plugin.events.on('getTurnStart', (data) => {
 plugin.events.on('getUpdatePlayerHp', (data) => {
     if (!isEnabled.value() || !gameState.isActive) return;
 
-    const isPlayer = data.playerId === gameState.player.id;
-    const playerData = isPlayer ? gameState.player : gameState.opponent;
-    const oldHp = playerData.hp;
-    
-    if (isPlayer) {
+    if (data.playerId === gameState.player.id) {
         gameState.updatePlayer({ hp: data.hp, maxHp: data.maxHp });
         uiManager.updateHP('player');
     } else if (data.playerId === gameState.opponent.id) {
         gameState.updateOpponent({ hp: data.hp, maxHp: data.maxHp });
         uiManager.updateHP('opponent');
-    }
-    
-    // Agregar al historial el cambio de HP
-    const newHp = data.hp;
-    const hpChange = newHp - oldHp;
-    if (hpChange !== 0) {
-        const playerName = playerData.username || (isPlayer ? 'Player' : 'Opponent');
-        const message = hpChange < 0 ? `perdió ${Math.abs(hpChange)} HP` : `ganó ${hpChange} HP`;
-        gameState.addAction('hp', playerName, message);
-        uiManager.updateActionLog();
     }
     
     console.log('[TournamentView] HP actualizado:', data);
@@ -2215,10 +2328,8 @@ plugin.events.on('getCardBoard', (data) => {
         const playerName = data.idPlayer === gameState.player.id ? gameState.player.username : gameState.opponent.username;
         console.log(`[TournamentView] ${playerName} jugó: ${card.name}`);
         
-        // Notificación y historial
+        // Notificación
         uiManager.showFloatingNotification(`${playerName} jugó ${card.name}`, 'card', 3000);
-        gameState.addAction('card', playerName, `jugó ${card.name}`);
-        uiManager.updateActionLog();
     } catch (error) {
         console.error('[TournamentView] Error parseando carta:', error);
     }
@@ -2233,10 +2344,8 @@ plugin.events.on('getSpellPlayed', (data) => {
         const playerName = data.idPlayer === gameState.player.id ? gameState.player.username : gameState.opponent.username;
         console.log(`[TournamentView] ${playerName} usó hechizo: ${card.name}`);
         
-        // Notificación y historial
+        // Notificación
         uiManager.showFloatingNotification(`${playerName} usó ${card.name}`, 'spell', 3000);
-        gameState.addAction('spell', playerName, `usó hechizo ${card.name}`);
-        uiManager.updateActionLog();
     } catch (error) {
         console.error('[TournamentView] Error parseando hechizo:', error);
     }
@@ -2248,10 +2357,8 @@ plugin.events.on('getMonsterDestroyed', (data) => {
     
     console.log('[TournamentView] Monstruo destruido, ID:', data.monsterId);
     
-    // Notificación y historial
+    // Notificación
     uiManager.showFloatingNotification('Monstruo destruido', 'damage', 2000);
-    gameState.addAction('monster', 'Sistema', 'Monstruo destruido');
-    uiManager.updateActionLog();
 });
 
 // Evento: Actualización del alma
@@ -2285,10 +2392,8 @@ plugin.events.on('Log:ARTIFACT_EFFECT', (data) => {
         
         console.log(`[TournamentView] ${playerName} activó artefacto: ${artifactName}`);
         
-        // Notificación y historial
+        // Notificación
         uiManager.showFloatingNotification(`${playerName} activó ${artifactName}`, 'artifact', 3000);
-        gameState.addAction('artifact', playerName, `activó ${artifactName}`);
-        uiManager.updateActionLog();
         
         // Agregar efecto glow al artefacto si se puede encontrar
         if (data.artifactActor && data.artifactActor.id) {
@@ -2321,10 +2426,8 @@ plugin.events.on('Log:SOUL_EFFECT', (data) => {
         
         console.log(`[TournamentView] ${playerName} activó efecto del alma: ${soulName}`);
         
-        // Notificación y historial
+        // Notificación
         uiManager.showFloatingNotification(`${playerName} activó efecto de alma`, 'info', 2500);
-        gameState.addAction('soul', playerName, `activó efecto de ${soulName}`);
-        uiManager.updateActionLog();
         
         // Agregar efecto glow al alma
         const soulSelector = isPlayer ? '[data-player-soul]' : '[data-opponent-soul]';
