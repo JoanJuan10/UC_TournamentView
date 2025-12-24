@@ -39,6 +39,12 @@ class I18n {
                 'settings.enabled': 'Activar Tournament View',
                 'settings.language': 'Idioma',
                 'settings.languageDesc': 'Seleccionar idioma de la interfaz',
+                'settings.template': 'Plantilla Visual',
+                'settings.templateDesc': 'Seleccionar estilo visual de la interfaz',
+                'settings.exportTemplate': 'Exportar Plantilla',
+                'settings.exportTemplateDesc': 'Descargar la plantilla actual como archivo JSON',
+                'settings.importTemplate': 'Importar Plantilla',
+                'settings.importTemplateDesc': 'Cargar una plantilla personalizada desde archivo',
                 
                 // Player defaults
                 'player.default': 'Jugador',
@@ -74,6 +80,12 @@ class I18n {
                 'settings.enabled': 'Enable Tournament View',
                 'settings.language': 'Language',
                 'settings.languageDesc': 'Select interface language',
+                'settings.template': 'Visual Template',
+                'settings.templateDesc': 'Select interface visual style',
+                'settings.exportTemplate': 'Export Template',
+                'settings.exportTemplateDesc': 'Download current template as JSON file',
+                'settings.importTemplate': 'Import Template',
+                'settings.importTemplateDesc': 'Load custom template from file',
                 
                 // Player defaults
                 'player.default': 'Player',
@@ -198,47 +210,272 @@ const gameState = new GameState();
 
 class TemplateManager {
     constructor() {
-        this.currentTemplate = null;
+        this.templates = [];           // Array de todas las plantillas disponibles
+        this.activeTemplate = null;    // Plantilla actualmente activa
         this.cssElement = null;
+        this.customTemplates = [];     // Plantillas importadas por el usuario
+        
+        // Cargar plantillas predefinidas
+        this.loadPredefinedTemplates();
+        
+        // Cargar plantillas custom desde localStorage
+        this.loadCustomTemplates();
+        
+        // Establecer plantilla por defecto
+        this.setActiveTemplate('default');
     }
 
-    loadDefaultTemplate() {
-        // Plantilla básica por defecto
-        this.currentTemplate = {
-            metadata: {
-                name: 'Basic',
-                version: '1.0.0',
-                author: 'TournamentView',
-                description: 'Plantilla básica de Tournament View',
-            },
-            config: {
-                enableAnimations: true,
-                showPlayerStats: true,
-                showActionLog: false,
-                compactMode: false,
-            },
-            variables: {
-                primaryColor: '#667eea',
-                secondaryColor: '#764ba2',
-                accentColor: '#f093fb',
-                backgroundColor: '#0f0f23',
-                textColor: '#ffffff',
-            },
+    /**
+     * Registra una plantilla en el sistema
+     */
+    registerTemplate(template) {
+        // Validar estructura básica
+        if (!template.metadata || !template.metadata.id) {
+            console.error('[TournamentView] Plantilla inválida: falta metadata.id');
+            return false;
+        }
+        
+        // Verificar si ya existe
+        const index = this.templates.findIndex(t => t.metadata.id === template.metadata.id);
+        if (index >= 0) {
+            // Reemplazar plantilla existente
+            this.templates[index] = template;
+            console.log('[TournamentView] Plantilla actualizada:', template.metadata.id);
+        } else {
+            // Añadir nueva plantilla
+            this.templates.push(template);
+            console.log('[TournamentView] Plantilla registrada:', template.metadata.id);
+        }
+        
+        return true;
+    }
+
+    /**
+     * Carga todas las plantillas predefinidas
+     */
+    loadPredefinedTemplates() {
+        // Plantilla Default (la actual convertida a JSON)
+        const defaultTemplate = this.createDefaultTemplate();
+        this.registerTemplate(defaultTemplate);
+        
+        // Plantilla Minimal (minimalista)
+        const minimalTemplate = this.createMinimalTemplate();
+        this.registerTemplate(minimalTemplate);
+        
+        // Plantilla Esports (broadcast profesional)
+        const esportsTemplate = this.createEsportsTemplate();
+        this.registerTemplate(esportsTemplate);
+        
+        console.log('[TournamentView] Plantillas predefinidas cargadas:', this.templates.length);
+    }
+
+    /**
+     * Carga plantillas personalizadas desde localStorage
+     */
+    loadCustomTemplates() {
+        try {
+            const stored = localStorage.getItem('uc_tournament_custom_templates');
+            if (stored) {
+                const customs = JSON.parse(stored);
+                this.customTemplates = Array.isArray(customs) ? customs : [];
+                
+                // Registrar cada plantilla custom
+                this.customTemplates.forEach(template => {
+                    this.registerTemplate(template);
+                });
+                
+                console.log('[TournamentView] Plantillas custom cargadas:', this.customTemplates.length);
+            }
+        } catch (error) {
+            console.error('[TournamentView] Error cargando plantillas custom:', error);
+            this.customTemplates = [];
+        }
+    }
+
+    /**
+     * Establece la plantilla activa por ID
+     */
+    setActiveTemplate(templateId) {
+        const template = this.getTemplateById(templateId);
+        
+        if (!template) {
+            console.error('[TournamentView] Plantilla no encontrada:', templateId);
+            return false;
+        }
+        
+        this.activeTemplate = template;
+        console.log('[TournamentView] Plantilla activa:', template.metadata.name);
+        return true;
+    }
+
+    /**
+     * Obtiene una plantilla por su ID
+     */
+    getTemplateById(id) {
+        return this.templates.find(t => t.metadata.id === id) || null;
+    }
+
+    /**
+     * Lista todas las plantillas disponibles
+     */
+    listTemplates() {
+        return this.templates.map(t => ({
+            id: t.metadata.id,
+            name: t.metadata.name,
+            author: t.metadata.author,
+            description: t.metadata.description,
+            isCustom: this.customTemplates.some(ct => ct.metadata.id === t.metadata.id)
+        }));
+    }
+
+    /**
+     * Exporta una plantilla a JSON
+     */
+    exportTemplate(templateId) {
+        const template = this.getTemplateById(templateId);
+        if (!template) {
+            return { success: false, error: 'Plantilla no encontrada' };
+        }
+        
+        return {
+            success: true,
+            data: JSON.stringify(template, null, 2)
         };
     }
 
+    /**
+     * Importa una plantilla desde JSON
+     */
+    importTemplate(jsonString) {
+        try {
+            const template = JSON.parse(jsonString);
+            
+            // Validar estructura
+            const validation = this.validateTemplate(template);
+            if (!validation.valid) {
+                return {
+                    success: false,
+                    error: `Plantilla inválida: ${validation.errors.join(', ')}`
+                };
+            }
+            
+            // Registrar plantilla
+            this.registerTemplate(template);
+            
+            // Guardar en custom templates
+            this.saveCustomTemplate(template);
+            
+            return {
+                success: true,
+                template: template
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: `Error parseando JSON: ${error.message}`
+            };
+        }
+    }
+
+    /**
+     * Valida la estructura de una plantilla
+     */
+    validateTemplate(template) {
+        const errors = [];
+        
+        // Validar metadata
+        if (!template.metadata) {
+            errors.push('Falta sección "metadata"');
+        } else {
+            if (!template.metadata.id) errors.push('Falta metadata.id');
+            if (!template.metadata.name) errors.push('Falta metadata.name');
+            if (!template.metadata.version) errors.push('Falta metadata.version');
+        }
+        
+        // Validar variables
+        if (!template.variables) {
+            errors.push('Falta sección "variables"');
+        } else {
+            const required = ['primaryColor', 'secondaryColor', 'backgroundColor', 'textColor'];
+            required.forEach(key => {
+                if (!template.variables[key]) {
+                    errors.push(`Falta variable requerida: ${key}`);
+                }
+            });
+        }
+        
+        // Validar customCSS (debe ser string)
+        if (template.customCSS && typeof template.customCSS !== 'string') {
+            errors.push('customCSS debe ser un string');
+        }
+        
+        return {
+            valid: errors.length === 0,
+            errors: errors
+        };
+    }
+
+    /**
+     * Guarda una plantilla custom en localStorage
+     */
+    saveCustomTemplate(template) {
+        // Verificar si ya existe
+        const index = this.customTemplates.findIndex(t => t.metadata.id === template.metadata.id);
+        
+        if (index >= 0) {
+            // Actualizar existente
+            this.customTemplates[index] = template;
+        } else {
+            // Añadir nueva
+            this.customTemplates.push(template);
+        }
+        
+        // Guardar en localStorage
+        try {
+            localStorage.setItem('uc_tournament_custom_templates', JSON.stringify(this.customTemplates));
+            console.log('[TournamentView] Plantilla custom guardada:', template.metadata.id);
+        } catch (error) {
+            console.error('[TournamentView] Error guardando plantilla custom:', error);
+        }
+    }
+
+    /**
+     * Elimina una plantilla custom
+     */
+    deleteCustomTemplate(templateId) {
+        // Filtrar de customTemplates
+        this.customTemplates = this.customTemplates.filter(t => t.metadata.id !== templateId);
+        
+        // Filtrar de templates
+        this.templates = this.templates.filter(t => t.metadata.id !== templateId);
+        
+        // Guardar en localStorage
+        try {
+            localStorage.setItem('uc_tournament_custom_templates', JSON.stringify(this.customTemplates));
+            console.log('[TournamentView] Plantilla custom eliminada:', templateId);
+            return true;
+        } catch (error) {
+            console.error('[TournamentView] Error eliminando plantilla custom:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Inyecta el CSS de la plantilla activa
+     */
     injectCSS() {
-        if (!this.currentTemplate) {
-            this.loadDefaultTemplate();
+        if (!this.activeTemplate) {
+            console.error('[TournamentView] No hay plantilla activa');
+            return;
         }
 
-        // Generar CSS con variables
+        // Generar CSS completo
         const cssVariables = this.generateCSSVariables();
-        const baseCSS = this.getBaseCSS();
+        const customCSS = this.activeTemplate.customCSS || '';
         
         const fullCSS = `
 ${cssVariables}
-${baseCSS}
+${customCSS}
 `;
 
         // Inyectar CSS usando la API de UnderScript
@@ -248,9 +485,12 @@ ${baseCSS}
             this.cssElement = plugin.addStyle(fullCSS);
         }
 
-        console.log('[TournamentView] CSS inyectado');
+        console.log('[TournamentView] CSS inyectado -', this.activeTemplate.metadata.name);
     }
 
+    /**
+     * Remueve el CSS inyectado
+     */
     removeCSS() {
         if (this.cssElement && this.cssElement.parentNode) {
             this.cssElement.remove();
@@ -259,8 +499,15 @@ ${baseCSS}
         console.log('[TournamentView] CSS removido');
     }
 
+    /**
+     * Genera las variables CSS desde la plantilla activa
+     */
     generateCSSVariables() {
-        const vars = this.currentTemplate.variables || {};
+        if (!this.activeTemplate || !this.activeTemplate.variables) {
+            return '';
+        }
+        
+        const vars = this.activeTemplate.variables;
         let cssVars = ':root {\n';
         
         for (const [key, value] of Object.entries(vars)) {
@@ -272,8 +519,29 @@ ${baseCSS}
         return cssVars;
     }
 
-    getBaseCSS() {
-        return `
+    /**
+     * Crea la plantilla Default (convierte la plantilla actual hardcodeada a JSON)
+     */
+    createDefaultTemplate() {
+        return {
+            metadata: {
+                id: 'default',
+                name: 'Default Tournament View',
+                version: '1.0.0',
+                author: 'JoanJuan10',
+                description: 'Plantilla por defecto con diseño moderno y gradientes vibrantes',
+                created: '2025-12-24',
+                modified: '2025-12-24',
+                tags: ['default', 'modern', 'gradient']
+            },
+            variables: {
+                primaryColor: '#667eea',
+                secondaryColor: '#764ba2',
+                accentColor: '#f093fb',
+                backgroundColor: '#0f0f23',
+                textColor: '#ffffff'
+            },
+            customCSS: `
 /* Ocultar historiales nativos de Underscript y Undercards */
 #history {
     display: none !important;
@@ -1084,7 +1352,962 @@ ${baseCSS}
         height: 20px;
     }
 }
-`;
+`
+        };
+    }
+
+    /**
+     * Crea la plantilla Minimal (diseño minimalista)
+     */
+    createMinimalTemplate() {
+        return {
+            metadata: {
+                id: 'minimal',
+                name: 'Minimal Clean',
+                version: '1.0.0',
+                author: 'JoanJuan10',
+                description: 'Diseño minimalista con colores planos y solo información esencial',
+                created: '2025-12-24',
+                modified: '2025-12-24',
+                tags: ['minimal', 'clean', 'simple']
+            },
+            variables: {
+                primaryColor: '#2c3e50',
+                secondaryColor: '#34495e',
+                accentColor: '#3498db',
+                backgroundColor: '#ecf0f1',
+                textColor: '#2c3e50'
+            },
+            customCSS: `
+/* Ocultar historiales nativos */
+#history,
+#game-history {
+    display: none !important;
+}
+
+.mainContent {
+    margin-top: 100px !important;
+}
+
+/* Minimal Base */
+#uc-tournament-view {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    color: var(--tv-text-color);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    pointer-events: none;
+}
+
+#uc-tournament-view * {
+    box-sizing: border-box;
+}
+
+/* Header minimalista */
+.tv-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: var(--tv-primary-color);
+    border-bottom: 2px solid var(--tv-accent-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    pointer-events: auto;
+}
+
+.tv-player-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+}
+
+.tv-player-info.active-turn {
+    opacity: 1;
+}
+
+.tv-player-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: white;
+}
+
+.tv-player-hp {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+}
+
+.tv-hp-bar {
+    width: 100px;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.tv-hp-fill {
+    height: 100%;
+    background: var(--tv-accent-color);
+    transition: width 0.3s ease;
+}
+
+.tv-hp-text {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: white;
+    min-width: 50px;
+}
+
+.tv-player-gold {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+}
+
+.tv-gold-text {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #f39c12;
+}
+
+.tv-player-soul {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tv-soul-image {
+    width: 24px;
+    height: 24px;
+}
+
+.tv-player-artifacts {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.tv-artifact-image {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+}
+
+.tv-artifact-counter {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: var(--tv-accent-color);
+    color: white;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    font-size: 0.625rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.tv-player-cards {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tv-card-counter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.tv-card-counter-label {
+    font-size: 0.625rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+}
+
+.tv-card-counter-value {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: white;
+}
+
+/* Center Info */
+.tv-center-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.tv-turn-indicator {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.4rem 1rem;
+    border-radius: 4px;
+}
+
+.tv-turn-label {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+}
+
+.tv-turn-number {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+}
+
+.tv-turn-timer {
+    font-size: 0.875rem;
+    color: white;
+    font-weight: 600;
+}
+
+.tv-turn-timer.low {
+    color: #e74c3c;
+}
+
+/* Opponent Info */
+.tv-opponent-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+    justify-content: flex-end;
+    flex-direction: row-reverse;
+}
+
+/* Notificaciones simples */
+.tv-notification {
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    padding: 0.75rem 1.25rem;
+    border-radius: 4px;
+    color: white;
+    font-weight: 500;
+    font-size: 0.875rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 10001;
+    background: var(--tv-accent-color);
+    max-width: 300px;
+}
+
+/* Panel de historial simple */
+.tv-action-log {
+    position: fixed;
+    top: 70px;
+    right: 0;
+    width: 350px;
+    max-height: calc(100vh - 80px);
+    background: white;
+    border-left: 2px solid var(--tv-accent-color);
+    z-index: 9999;
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.tv-action-log.collapsed {
+    transform: translateX(350px);
+}
+
+.tv-log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: var(--tv-primary-color);
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.tv-log-toggle {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+}
+
+.tv-log-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem;
+}
+
+.tv-log-entry {
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+    background: #f8f9fa;
+    border-left: 3px solid var(--tv-accent-color);
+    font-size: 0.875rem;
+    color: var(--tv-text-color);
+    line-height: 1.5;
+}
+
+/* Botón flotante simple */
+.tv-log-float-toggle {
+    position: fixed;
+    top: 70px;
+    right: 10px;
+    width: 36px;
+    height: 36px;
+    background: var(--tv-accent-color);
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 10000;
+}
+
+/* Result overlay minimalista */
+.tv-result-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+}
+
+.tv-result-container {
+    background: white;
+    border: 2px solid var(--tv-primary-color);
+    border-radius: 8px;
+    padding: 2rem 3rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    min-width: 350px;
+}
+
+.tv-result-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--tv-text-color);
+}
+
+.tv-result-title.victory {
+    color: #27ae60;
+}
+
+.tv-result-title.defeat {
+    color: #e74c3c;
+}
+
+.tv-result-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.tv-result-stat {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.tv-result-stat-label {
+    color: #7f8c8d;
+    font-weight: 500;
+}
+
+.tv-result-stat-value {
+    color: var(--tv-text-color);
+    font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 1280px) {
+    .tv-header {
+        height: 50px;
+        padding: 0 1rem;
+    }
+    
+    .tv-player-name {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .tv-header {
+        height: auto;
+        flex-direction: column;
+        padding: 0.5rem;
+        gap: 0.5rem;
+    }
+    
+    .tv-player-info,
+    .tv-opponent-info {
+        width: 100%;
+    }
+}
+`
+        };
+    }
+
+    /**
+     * Crea la plantilla Esports (broadcast profesional)
+     */
+    createEsportsTemplate() {
+        return {
+            metadata: {
+                id: 'esports',
+                name: 'Esports Broadcast',
+                version: '1.0.0',
+                author: 'JoanJuan10',
+                description: 'Estilo de transmisión profesional con efectos dramáticos y colores corporativos',
+                created: '2025-12-24',
+                modified: '2025-12-24',
+                tags: ['esports', 'professional', 'broadcast']
+            },
+            variables: {
+                primaryColor: '#0a1929',
+                secondaryColor: '#1a2332',
+                accentColor: '#ffd700',
+                backgroundColor: '#000814',
+                textColor: '#ffffff'
+            },
+            customCSS: `
+/* Ocultar historiales nativos */
+#history,
+#game-history {
+    display: none !important;
+}
+
+.mainContent {
+    margin-top: 120px !important;
+}
+
+/* Esports Base */
+#uc-tournament-view {
+    font-family: 'Roboto', 'Arial Black', sans-serif;
+    color: var(--tv-text-color);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    pointer-events: none;
+}
+
+#uc-tournament-view * {
+    box-sizing: border-box;
+}
+
+/* Header estilo broadcast */
+.tv-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100px;
+    background: linear-gradient(180deg, var(--tv-primary-color) 0%, var(--tv-secondary-color) 100%);
+    border-bottom: 4px solid var(--tv-accent-color);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7), inset 0 -2px 0 rgba(255, 215, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    pointer-events: auto;
+}
+
+.tv-player-info {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex: 1;
+    position: relative;
+}
+
+.tv-player-info.active-turn::before {
+    content: '';
+    position: absolute;
+    top: -12px;
+    left: -12px;
+    right: -12px;
+    bottom: -12px;
+    border: 4px solid var(--tv-accent-color);
+    border-radius: 8px;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.6), inset 0 0 20px rgba(255, 215, 0, 0.2);
+    animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+    0%, 100% {
+        opacity: 1;
+        box-shadow: 0 0 30px rgba(255, 215, 0, 0.6), inset 0 0 20px rgba(255, 215, 0, 0.2);
+    }
+    50% {
+        opacity: 0.8;
+        box-shadow: 0 0 50px rgba(255, 215, 0, 0.8), inset 0 0 30px rgba(255, 215, 0, 0.3);
+    }
+}
+
+.tv-player-name {
+    font-size: 1.75rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, #ffffff 0%, var(--tv-accent-color) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.8));
+}
+
+.tv-player-hp {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.3) 100%);
+    padding: 0.75rem 1.25rem;
+    border-radius: 6px;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.tv-hp-bar {
+    width: 140px;
+    height: 14px;
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.6) 100%);
+    border-radius: 7px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.tv-hp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff0000 0%, #ff6b00 30%, #ffd700 100%);
+    transition: width 0.3s ease;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+    position: relative;
+}
+
+.tv-hp-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, transparent 50%, rgba(0, 0, 0, 0.2) 100%);
+}
+
+.tv-hp-text {
+    font-size: 1rem;
+    font-weight: 900;
+    color: var(--tv-accent-color);
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.7), 2px 2px 4px rgba(0, 0, 0, 0.8);
+    min-width: 60px;
+    letter-spacing: 1px;
+}
+
+.tv-player-gold {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 215, 0, 0.05) 100%);
+    padding: 0.75rem 1.25rem;
+    border-radius: 6px;
+    border: 2px solid var(--tv-accent-color);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.tv-gold-text {
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: var(--tv-accent-color);
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.tv-player-soul {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    border: 2px solid rgba(255, 215, 0, 0.2);
+}
+
+.tv-soul-image {
+    width: 32px;
+    height: 32px;
+    filter: drop-shadow(0 0 8px currentColor);
+}
+
+.tv-player-artifacts {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.tv-artifact-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    border: 2px solid var(--tv-accent-color);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+    filter: brightness(1.1);
+}
+
+.tv-artifact-counter {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: linear-gradient(135deg, #ff0000 0%, #ff6b00 100%);
+    color: white;
+    border: 2px solid var(--tv-accent-color);
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
+}
+
+.tv-player-cards {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+.tv-card-counter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.tv-card-counter-label {
+    font-size: 0.625rem;
+    color: rgba(255, 215, 0, 0.6);
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.tv-card-counter-value {
+    font-size: 1.125rem;
+    font-weight: 900;
+    color: var(--tv-accent-color);
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+}
+
+/* Center Info */
+.tv-center-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.tv-turn-indicator {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.5) 100%);
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    border: 3px solid var(--tv-accent-color);
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.5), inset 0 2px 0 rgba(255, 255, 255, 0.1);
+}
+
+.tv-turn-label {
+    font-size: 0.875rem;
+    color: rgba(255, 215, 0, 0.7);
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.tv-turn-number {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--tv-accent-color);
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 3px 3px 6px rgba(0, 0, 0, 0.8);
+}
+
+.tv-turn-timer {
+    font-size: 1rem;
+    color: var(--tv-accent-color);
+    font-weight: 900;
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+    letter-spacing: 1px;
+}
+
+.tv-turn-timer.low {
+    color: #ff0000;
+    text-shadow: 0 0 20px rgba(255, 0, 0, 0.9);
+    animation: pulse-urgent 0.5s infinite;
+}
+
+@keyframes pulse-urgent {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Opponent Info */
+.tv-opponent-info {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex: 1;
+    justify-content: flex-end;
+    flex-direction: row-reverse;
+    position: relative;
+}
+
+.tv-opponent-info.active-turn::before {
+    content: '';
+    position: absolute;
+    top: -12px;
+    left: -12px;
+    right: -12px;
+    bottom: -12px;
+    border: 4px solid var(--tv-accent-color);
+    border-radius: 8px;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.6), inset 0 0 20px rgba(255, 215, 0, 0.2);
+    animation: pulse-glow 2s infinite;
+}
+
+/* Notificaciones dramáticas */
+.tv-notification {
+    position: fixed;
+    top: 110px;
+    right: 20px;
+    padding: 1.25rem 1.75rem;
+    border-radius: 8px;
+    color: white;
+    font-weight: 900;
+    font-size: 1.125rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 30px rgba(255, 215, 0, 0.3);
+    z-index: 10001;
+    border: 2px solid var(--tv-accent-color);
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(26, 35, 50, 0.9) 100%);
+    max-width: 450px;
+}
+
+/* Panel de historial profesional */
+.tv-action-log {
+    position: fixed;
+    top: 110px;
+    right: 0;
+    width: 500px;
+    max-height: calc(100vh - 120px);
+    background: linear-gradient(135deg, rgba(10, 25, 41, 0.98) 0%, rgba(0, 8, 20, 0.98) 100%);
+    border-left: 4px solid var(--tv-accent-color);
+    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.7);
+    z-index: 9999;
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.tv-action-log.collapsed {
+    transform: translateX(500px);
+}
+
+.tv-log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, var(--tv-primary-color) 0%, var(--tv-secondary-color) 100%);
+    border-bottom: 3px solid var(--tv-accent-color);
+    color: var(--tv-accent-color);
+    font-weight: 900;
+    font-size: 1.25rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.tv-log-toggle {
+    background: rgba(255, 215, 0, 0.2);
+    border: 2px solid var(--tv-accent-color);
+    color: var(--tv-accent-color);
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.125rem;
+    font-weight: 900;
+}
+
+.tv-log-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.75rem;
+}
+
+.tv-log-entry {
+    padding: 0.875rem 1.25rem;
+    margin-bottom: 0.75rem;
+    border-radius: 6px;
+    background: rgba(255, 215, 0, 0.05);
+    border-left: 4px solid var(--tv-accent-color);
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.95);
+    line-height: 1.6;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Botón flotante profesional */
+.tv-log-float-toggle {
+    position: fixed;
+    top: 110px;
+    right: 10px;
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--tv-primary-color) 0%, var(--tv-secondary-color) 100%);
+    border: 3px solid var(--tv-accent-color);
+    border-radius: 8px;
+    color: var(--tv-accent-color);
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 215, 0, 0.3);
+    z-index: 10000;
+    font-weight: 900;
+}
+
+/* Result overlay dramático */
+.tv-result-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(0, 8, 20, 0.95) 0%, rgba(10, 25, 41, 0.95) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+}
+
+.tv-result-container {
+    background: linear-gradient(135deg, var(--tv-primary-color) 0%, var(--tv-secondary-color) 100%);
+    border: 4px solid var(--tv-accent-color);
+    border-radius: 12px;
+    padding: 3rem 4rem;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7), 0 0 60px rgba(255, 215, 0, 0.3);
+    text-align: center;
+    min-width: 500px;
+}
+
+.tv-result-title {
+    font-size: 4rem;
+    font-weight: 900;
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+}
+
+.tv-result-title.victory {
+    color: var(--tv-accent-color);
+    text-shadow: 0 0 40px rgba(255, 215, 0, 0.9), 4px 4px 8px rgba(0, 0, 0, 0.8);
+}
+
+.tv-result-title.defeat {
+    color: #ff0000;
+    text-shadow: 0 0 40px rgba(255, 0, 0, 0.9), 4px 4px 8px rgba(0, 0, 0, 0.8);
+}
+
+.tv-result-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.tv-result-stat {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 1.5rem;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 6px;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+}
+
+.tv-result-stat-label {
+    color: rgba(255, 215, 0, 0.7);
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.tv-result-stat-value {
+    color: var(--tv-accent-color);
+    font-weight: 900;
+    font-size: 1.25rem;
+}
+
+/* Responsive */
+@media (max-width: 1280px) {
+    .tv-header {
+        height: 80px;
+        padding: 0 1rem;
+    }
+    
+    .tv-player-name {
+        font-size: 1.25rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .tv-header {
+        height: auto;
+        flex-direction: column;
+        padding: 0.75rem;
+        gap: 0.75rem;
+    }
+    
+    .tv-player-info,
+    .tv-opponent-info {
+        width: 100%;
+    }
+}
+`
+        };
     }
 }
 
@@ -2096,6 +3319,123 @@ const languageSetting = plugin.settings().add({
                 uiManager.update();
             }
         }
+    }
+});
+
+// Setting de plantilla visual
+const templateSetting = plugin.settings().add({
+    key: 'template',
+    name: i18n.t('settings.template'),
+    description: i18n.t('settings.templateDesc'),
+    type: 'select',
+    default: 'default',
+    data: () => {
+        // Retornar array de objetos con {value, label}
+        return templateManager.listTemplates().map(t => ({
+            value: t.id,
+            label: `${t.name}${t.isCustom ? ' (Custom)' : ''}`
+        }));
+    },
+    onChange: (newTemplateId) => {
+        console.log('[TournamentView] Cambiando plantilla a:', newTemplateId);
+        
+        // Cambiar plantilla activa
+        const result = templateManager.setActiveTemplate(newTemplateId);
+        if (result.success) {
+            console.log('[TournamentView] Plantilla cambiada exitosamente');
+            
+            // Si hay UI activa, regenerarla con la nueva plantilla
+            if (uiManager.container) {
+                console.log('[TournamentView] Regenerando UI con nueva plantilla');
+                uiManager.destroy();
+                uiManager.initialize();
+                
+                // Si hay una partida activa, actualizar todos los datos
+                if (gameState.isActive) {
+                    uiManager.update();
+                }
+            }
+        } else {
+            console.error('[TournamentView] Error al cambiar plantilla:', result.error);
+        }
+    }
+});
+
+// Button setting para exportar plantilla
+const exportTemplateSetting = plugin.settings().add({
+    key: 'exportTemplate',
+    name: i18n.t('settings.exportTemplate'),
+    description: i18n.t('settings.exportTemplateDesc'),
+    type: 'button',
+    text: 'Exportar',
+    onClick: () => {
+        console.log('[TournamentView] Exportando plantilla actual');
+        
+        const currentTemplateId = templateSetting.value();
+        const result = templateManager.exportTemplate(currentTemplateId);
+        
+        if (result.success) {
+            // Crear blob y descargar archivo
+            const blob = new Blob([result.data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `template_${currentTemplateId}_${Date.now()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            console.log('[TournamentView] Plantilla exportada exitosamente');
+        } else {
+            console.error('[TournamentView] Error al exportar plantilla:', result.error);
+            alert(`Error al exportar plantilla: ${result.error}`);
+        }
+    }
+});
+
+// Button setting para importar plantilla
+const importTemplateSetting = plugin.settings().add({
+    key: 'importTemplate',
+    name: i18n.t('settings.importTemplate'),
+    description: i18n.t('settings.importTemplateDesc'),
+    type: 'button',
+    text: 'Importar',
+    onClick: () => {
+        console.log('[TournamentView] Iniciando importación de plantilla');
+        
+        // Crear input file temporal
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'application/json,.json';
+        
+        input.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            try {
+                const text = await file.text();
+                const result = templateManager.importTemplate(text);
+                
+                if (result.success) {
+                    console.log('[TournamentView] Plantilla importada exitosamente:', result.template.metadata.name);
+                    alert(`Plantilla "${result.template.metadata.name}" importada exitosamente`);
+                    
+                    // Actualizar el selector de plantillas (forzar refresh del data)
+                    // Esto se puede hacer destruyendo y recreando el setting o simplemente
+                    // cambiando a la nueva plantilla
+                    templateSetting.set(result.template.metadata.id);
+                } else {
+                    console.error('[TournamentView] Error al importar plantilla:', result.errors);
+                    alert(`Error al importar plantilla:\n${result.errors.join('\n')}`);
+                }
+            } catch (error) {
+                console.error('[TournamentView] Error al leer archivo:', error);
+                alert(`Error al leer archivo: ${error.message}`);
+            }
+        };
+        
+        input.click();
     }
 });
 

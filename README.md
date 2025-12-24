@@ -28,17 +28,108 @@ El plugin cuenta con un overlay completo y funcional que muestra toda la informa
   - Traducciones completas de UI y notificaciones
   - Cambio de idioma en tiempo real
 
-- ✅ **Sistema de plantillas base** - Estructura CSS con variables personalizables
+- ✅ **Sistema de plantillas completo** - Múltiples estilos visuales intercambiables
+  - 3 plantillas predefinidas (Default, Minimal, Esports)
+  - Importación/Exportación de plantillas personalizadas
+  - Selector en settings para cambiar entre plantillas
+  - Sistema de validación para plantillas importadas
 - ✅ **Extracción de datos del DOM** - Lectura robusta de almas, artefactos y contadores
 - ✅ **Overlay de resultados** - Pantalla de victoria/derrota con estadísticas
 - ✅ **Settings funcional** - Activar/desactivar el plugin correctamente
 
 ### Características planeadas:
 
-- 📦 **Importar/Exportar plantillas** - Comparte tus diseños en formato JSON + CSS
-- 🎨 **Plantillas adicionales** - Múltiples estilos visuales
 - 🎬 **Animaciones mejoradas** - Transiciones y efectos visuales
 - ⚙️ **Configuración avanzada** - Personalización granular de elementos
+- 🎨 **Más plantillas** - Compact, Classic, y otros estilos
+
+## 🎨 Sistema de Plantillas
+
+### Plantillas Predefinidas
+
+El plugin incluye 3 plantillas visuales predefinidas:
+
+1. **Default** - Diseño moderno con gradientes y animaciones suaves
+   - Colores: Púrpura (#667eea) y magenta (#764ba2)
+   - Estilo: Moderno con efectos glassmorphism
+   - Ideal para: Transmisiones casuales y streaming general
+
+2. **Minimal** - Diseño minimalista y limpio
+   - Colores: Grises y azul plano (#3498db)
+   - Estilo: Flat design sin efectos complejos
+   - Ideal para: Pantallas pequeñas y bajo consumo de recursos
+
+3. **Esports** - Estilo broadcast profesional
+   - Colores: Azul marino (#0a1929) y dorado (#ffd700)
+   - Estilo: Efectos de brillo, animaciones dramáticas
+   - Ideal para: Torneos profesionales y eventos competitivos
+
+### Cambiar Plantilla
+
+1. Abre los **Settings de UnderScript**
+2. Busca la sección **TournamentView**
+3. En el selector **"Plantilla Visual"**, elige la plantilla deseada
+4. La interfaz se regenerará automáticamente con el nuevo estilo
+
+### Exportar Plantilla
+
+Para guardar una plantilla y compartirla:
+
+1. Selecciona la plantilla que deseas exportar
+2. Haz clic en **"Exportar Plantilla"**
+3. Se descargará un archivo JSON con toda la configuración
+4. Comparte este archivo con otros usuarios
+
+### Importar Plantilla
+
+Para usar una plantilla personalizada:
+
+1. Haz clic en **"Importar Plantilla"**
+2. Selecciona un archivo `.json` de plantilla
+3. El sistema validará la plantilla automáticamente
+4. Si es válida, aparecerá en el selector como "(Custom)"
+5. Las plantillas importadas se guardan en localStorage
+
+### Crear Plantilla Personalizada
+
+Las plantillas son archivos JSON con esta estructura:
+
+```json
+{
+  "metadata": {
+    "id": "mi-plantilla",
+    "name": "Mi Plantilla Épica",
+    "version": "1.0.0",
+    "author": "Tu Nombre",
+    "description": "Descripción de tu plantilla",
+    "created": "2025-12-24",
+    "modified": "2025-12-24",
+    "tags": ["custom", "epic"]
+  },
+  "variables": {
+    "primaryColor": "#ff0000",
+    "secondaryColor": "#00ff00",
+    "accentColor": "#0000ff",
+    "backgroundColor": "#ffffff",
+    "textColor": "#000000"
+  },
+  "customCSS": "/* Tu CSS personalizado aquí */"
+}
+```
+
+**Campos obligatorios:**
+- `metadata.id`: Identificador único (sin espacios)
+- `metadata.name`: Nombre visible de la plantilla
+- `metadata.version`: Versión (formato semver)
+- `variables`: Objeto con colores base (primaryColor, secondaryColor, etc.)
+- `customCSS`: String con todo el CSS de la plantilla
+
+**Variables CSS disponibles:**
+- Todas las variables se inyectan en `:root` con prefijo `--tv-`
+- Ejemplo: `primaryColor` → `var(--tv-primary-color)`
+- Convierte camelCase automáticamente a kebab-case
+
+Para más detalles técnicos, consulta [docs/10_FASE4_PLANTILLAS.md](docs/10_FASE4_PLANTILLAS.md)
 
 ## 🔧 Requisitos
 
