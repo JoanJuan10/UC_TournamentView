@@ -274,6 +274,15 @@ ${baseCSS}
 
     getBaseCSS() {
         return `
+/* Ocultar historiales nativos de Underscript y Undercards */
+#history {
+    display: none !important;
+}
+
+#game-history {
+    display: none !important;
+}
+
 /* Tournament View Base Styles */
 #uc-tournament-view {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
