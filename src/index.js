@@ -1903,7 +1903,7 @@ let timerWatcher = null;
 // Setting básico de activación
 const isEnabled = plugin.settings().add({
     key: 'enabled',
-    name: i18n.t('settings.enabled'),
+    name: 'Activar Tournament View',
     type: 'boolean',
     default: false,
 });
@@ -1911,8 +1911,8 @@ const isEnabled = plugin.settings().add({
 // Setting de idioma
 const languageSetting = plugin.settings().add({
     key: 'language',
-    name: i18n.t('settings.language'),
-    description: i18n.t('settings.languageDesc'),
+    name: 'Idioma / Language',
+    description: 'Seleccionar idioma de la interfaz / Select interface language',
     type: 'dropdown',
     options: [
         { value: 'es', text: 'Español' },
