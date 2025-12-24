@@ -2012,18 +2012,37 @@ let timerWatcher = null;
 function startTimerWatcher() {
     if (timerWatcher) clearInterval(timerWatcher);
     
+    console.log('[TournamentView] Iniciando timer watcher...');
+    
     timerWatcher = setInterval(() => {
         try {
             // Intentar obtener tiempo del global del juego
             const time = window.global ? window.global('time') : null;
             if (time !== null && time !== undefined) {
                 uiManager.updateTimer(Math.max(0, time));
+                return;
+            }
+            
+            // Fallback: intentar leer del DOM
+            // Buscar el timer (único elemento que cambia de ally/enemy según el turno)
+            const timerElement = document.querySelector('.timer.active');
+            if (timerElement) {
+                const timeSpan = timerElement.querySelector('.white');
+                if (timeSpan && timeSpan.textContent) {
+                    const timeText = timeSpan.textContent.trim();
+                    const timeParts = timeText.split(':');
+                    if (timeParts.length === 2) {
+                        const minutes = parseInt(timeParts[0]) || 0;
+                        const seconds = parseInt(timeParts[1]) || 0;
+                        const totalSeconds = minutes * 60 + seconds;
+                        uiManager.updateTimer(totalSeconds);
+                    }
+                }
             } else {
-                // Fallback: intentar leer del DOM
-                // Buscar el timer activo (puede ser .timer.active.ally o .timer.active.enemy)
-                const activeTimer = document.querySelector('.timer.active');
-                if (activeTimer) {
-                    const timeSpan = activeTimer.querySelector('.white');
+                // Si no existe .timer.active, intentar con cualquier .timer
+                const anyTimer = document.querySelector('.timer');
+                if (anyTimer) {
+                    const timeSpan = anyTimer.querySelector('.white');
                     if (timeSpan && timeSpan.textContent) {
                         const timeText = timeSpan.textContent.trim();
                         const timeParts = timeText.split(':');
