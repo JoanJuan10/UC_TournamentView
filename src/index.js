@@ -2020,15 +2020,19 @@ function startTimerWatcher() {
                 uiManager.updateTimer(Math.max(0, time));
             } else {
                 // Fallback: intentar leer del DOM
-                const timerElement = document.querySelector('.timer');
-                if (timerElement && timerElement.textContent) {
-                    const timeText = timerElement.textContent.trim();
-                    const timeParts = timeText.split(':');
-                    if (timeParts.length === 2) {
-                        const minutes = parseInt(timeParts[0]) || 0;
-                        const seconds = parseInt(timeParts[1]) || 0;
-                        const totalSeconds = minutes * 60 + seconds;
-                        uiManager.updateTimer(totalSeconds);
+                // Buscar el timer activo (puede ser .timer.active.ally o .timer.active.enemy)
+                const activeTimer = document.querySelector('.timer.active');
+                if (activeTimer) {
+                    const timeSpan = activeTimer.querySelector('.white');
+                    if (timeSpan && timeSpan.textContent) {
+                        const timeText = timeSpan.textContent.trim();
+                        const timeParts = timeText.split(':');
+                        if (timeParts.length === 2) {
+                            const minutes = parseInt(timeParts[0]) || 0;
+                            const seconds = parseInt(timeParts[1]) || 0;
+                            const totalSeconds = minutes * 60 + seconds;
+                            uiManager.updateTimer(totalSeconds);
+                        }
                     }
                 }
             }
