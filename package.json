@@ -4,7 +4,7 @@
   "description": "Plugin para UnderScript que mejora la vista de espectador en Undercards.net con plantillas modernas",
   "repository": "JoanJuan10/UC_TournamentView",
   "version": "0.1.0",
-  "license": "MIT",
+  "license": "CC-BY-NC-SA-4.0",
   "homepage": "https://github.com/JoanJuan10/UC_TournamentView",
   "author": "JoanJuan10",
   "scripts": {

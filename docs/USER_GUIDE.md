@@ -138,7 +138,7 @@ Técnicamente sí (Firefox + Tampermonkey), pero no está pensado para pantallas
 No, solo lee y muestra datos, no toca la lógica del juego.
 
 **¿Puedo modificar el código?**  
-Sí, es MIT. Mira [DEVELOPMENT.md](DEVELOPMENT.md) si quieres contribuir.
+Sí, es CC BY-NC-SA 4.0 (uso no comercial). Mira [DEVELOPMENT.md](DEVELOPMENT.md) si quieres contribuir.
 
 ---
 

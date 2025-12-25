@@ -37,10 +37,11 @@ Estos docs tienen info técnica detallada del desarrollo. Están aquí por si al
 
 ### Integración con UnderScript
 
-| Doc | Qué hay |
-|-----|---------|
-| [underscript.js](underscript.js) | Código de UnderScript de referencia |
-| [uc_replays.js](uc_replays.js) | Plugin UC Replays (patrón FakeSetting) |
+| Recurso | Qué hay |
+|---------|--------|
+| [UnderScript](https://github.com/UCProjects/UnderScript) | Código fuente del juego |
+| [Plugin Template](https://github.com/UCProjects/plugin-template) | Template oficial para plugins |
+| [UC Replays](chrome-extension://dhdgffkkebhmkfjojejmpbldmpobfkfo/ask.html?aid=6909e800-51b5-4e5d-9581-2455ecac1a0c) | Plugin de referencia (patrón FakeSetting) |
 
 ### Desarrollo interno
 | [INTERNAL_DOCS.md](INTERNAL_DOCS.md) | Consolidated internal documentation (project specs, lessons learned, bugs resolved) |

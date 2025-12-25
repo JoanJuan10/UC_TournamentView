@@ -901,4 +901,4 @@ UnderScript.getPluginInstance('TournamentView').templateManager.templates
 
 ---
 
-**Para más información, consulta las otras guías en [`docs/`](../docs/) o abre un Issue en GitHub.**
+**Para más información, consulta las otras guías en [README](README.md) o abre un Issue en GitHub.**

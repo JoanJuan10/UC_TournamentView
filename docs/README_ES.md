@@ -1,6 +1,6 @@
 # UC_TournamentView
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/JoanJuan10/UC_TournamentView/releases)
 [![Status](https://img.shields.io/badge/status-beta-green.svg)](https://github.com/JoanJuan10/UC_TournamentView)
 
@@ -126,7 +126,7 @@ Mira [CONTRIBUTING.md](../CONTRIBUTING.md) para la guía completa.
 
 ## 📝 Licencia
 
-MIT - ¡haz lo que quieras con esto! Mira [LICENSE](../LICENSE).
+[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) - Libre para usar y modificar con fines no comerciales. Mira [LICENSE](../LICENSE).
 
 ## 🔗 Enlaces
 
