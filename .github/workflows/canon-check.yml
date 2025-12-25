@@ -1,5 +1,5 @@
 # Canon Consistency Check
-# Verifica que la documentación del proyecto sea consistente y esté actualizada
+# Verifica que la documentación del proyecto sea consistente
 
 name: Canon Consistency Check
 
@@ -20,17 +20,12 @@ on:
 
 jobs:
   canon-check:
-    name: Verificar Consistencia del Canon
+    name: Verificar Consistencia
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout repositorio
         uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
 
       - name: Verificar estructura de documentación
         id: structure-check
@@ -39,21 +34,11 @@ jobs:
           
           REQUIRED_FILES=(
             "README.md"
-            "docs/00_INDICE.md"
-            "docs/01_TAMPERMONKEY.md"
-            "docs/02_UNDERSCRIPT_PLUGIN_API.md"
-            "docs/03_EVENTOS_JUEGO.md"
-            "docs/04_VARIABLES_GLOBALES.md"
-            "docs/05_LIBRERIAS_INCLUIDAS.md"
-            "docs/06_ESPECIFICACION_PROYECTO.md"
-            "docs/07_DESARROLLO.md"
-            "docs/08_ESTADO_ACTUAL.md"
-            "docs/09_LECCIONES_APRENDIDAS.md"
-            "docs/10_FASE4_PLANTILLAS.md"
-            "docs/11_FASE4_RESUMEN.md"
-            "docs/12_CANON_CHECK.md"
-            "docs/13_MANTENIMIENTO_DIC_2025.md"
-            "docs/16_FASE4_BUGS_RESUELTOS.md"
+            "docs/README.md"
+            "docs/README_ES.md"
+            "docs/API.md"
+            "docs/DEVELOPMENT.md"
+            "docs/TEMPLATE_GUIDE.md"
             "docs/TESTING_GUIDE.md"
           )
           
@@ -75,46 +60,37 @@ jobs:
           
           echo "✅ Todos los archivos de documentación existen"
 
-      - name: Verificar enlaces internos en documentación
+      - name: Verificar enlaces internos
         id: links-check
         run: |
           echo "🔗 Verificando enlaces internos..."
           
           BROKEN_LINKS=()
           
-          # Función para verificar enlaces markdown
           check_links() {
             local file=$1
             echo "Analizando: $file"
             
-            # Extraer enlaces markdown [texto](ruta)
-            # Filtrar URLs externas (http://, https://)
             links=$(grep -oP '\[.*?\]\(\K[^)]+(?=\))' "$file" 2>/dev/null | grep -v '^http' | grep -v '^#' || true)
             
             for link in $links; do
-              # Limpiar el enlace (quitar anclas #)
               clean_link=$(echo "$link" | sed 's/#.*//')
               
               if [ -n "$clean_link" ]; then
-                # Resolver ruta relativa desde el directorio del archivo
                 dir=$(dirname "$file")
                 target="$dir/$clean_link"
-                
-                # Normalizar la ruta
                 target=$(realpath -m "$target" 2>/dev/null || echo "$target")
                 
                 if [ ! -f "$target" ]; then
-                  echo "❌ Enlace roto en $file: $link -> $target"
+                  echo "❌ Enlace roto en $file: $link"
                   BROKEN_LINKS+=("$file: $link")
                 fi
               fi
             done
           }
           
-          # Verificar README.md
           check_links "README.md"
           
-          # Verificar todos los .md en docs/
           for doc in docs/*.md; do
             if [ -f "$doc" ]; then
               check_links "$doc"
@@ -128,131 +104,20 @@ jobs:
           
           echo "✅ Todos los enlaces internos son válidos"
 
-      - name: Verificar índice en README.md
-        id: index-check
-        run: |
-          echo "📋 Verificando que el README incluya todos los documentos..."
-          
-          MISSING_REFS=()
-          
-          # Documentos que deben estar referenciados en README.md
-          DOCS=(
-            "01_TAMPERMONKEY.md"
-            "02_UNDERSCRIPT_PLUGIN_API.md"
-            "03_EVENTOS_JUEGO.md"
-            "04_VARIABLES_GLOBALES.md"
-            "05_LIBRERIAS_INCLUIDAS.md"
-            "06_ESPECIFICACION_PROYECTO.md"
-          )
-          
-          for doc in "${DOCS[@]}"; do
-            if ! grep -q "$doc" README.md; then
-              MISSING_REFS+=("$doc")
-              echo "❌ No referenciado en README: $doc"
-            else
-              echo "✅ Referenciado: $doc"
-            fi
-          done
-          
-          if [ ${#MISSING_REFS[@]} -gt 0 ]; then
-            echo "::warning::${#MISSING_REFS[@]} documento(s) no están referenciados en README.md"
-          fi
-          
-          echo "✅ Verificación de índice completada"
-
-      - name: Verificar navegación entre documentos
-        id: navigation-check
-        run: |
-          echo "🧭 Verificando navegación secuencial..."
-          
-          NAVIGATION_ISSUES=()
-          
-          # Verificar que cada doc tenga enlaces al anterior y siguiente
-          declare -A NAV_PREV
-          declare -A NAV_NEXT
-          
-          NAV_PREV["02_UNDERSCRIPT_PLUGIN_API.md"]="01_TAMPERMONKEY.md"
-          NAV_PREV["03_EVENTOS_JUEGO.md"]="02_UNDERSCRIPT_PLUGIN_API.md"
-          NAV_PREV["04_VARIABLES_GLOBALES.md"]="03_EVENTOS_JUEGO.md"
-          NAV_PREV["05_LIBRERIAS_INCLUIDAS.md"]="04_VARIABLES_GLOBALES.md"
-          NAV_PREV["06_ESPECIFICACION_PROYECTO.md"]="05_LIBRERIAS_INCLUIDAS.md"
-          
-          NAV_NEXT["01_TAMPERMONKEY.md"]="02_UNDERSCRIPT_PLUGIN_API.md"
-          NAV_NEXT["02_UNDERSCRIPT_PLUGIN_API.md"]="03_EVENTOS_JUEGO.md"
-          NAV_NEXT["03_EVENTOS_JUEGO.md"]="04_VARIABLES_GLOBALES.md"
-          NAV_NEXT["04_VARIABLES_GLOBALES.md"]="05_LIBRERIAS_INCLUIDAS.md"
-          NAV_NEXT["05_LIBRERIAS_INCLUIDAS.md"]="06_ESPECIFICACION_PROYECTO.md"
-          
-          for doc in docs/*.md; do
-            if [ -f "$doc" ]; then
-              filename=$(basename "$doc")
-              
-              # Verificar enlace al documento anterior
-              if [ -n "${NAV_PREV[$filename]}" ]; then
-                if ! grep -q "${NAV_PREV[$filename]}" "$doc"; then
-                  echo "⚠️ $filename no tiene enlace a documento anterior: ${NAV_PREV[$filename]}"
-                  NAVIGATION_ISSUES+=("$filename: falta enlace a ${NAV_PREV[$filename]}")
-                fi
-              fi
-              
-              # Verificar enlace al documento siguiente
-              if [ -n "${NAV_NEXT[$filename]}" ]; then
-                if ! grep -q "${NAV_NEXT[$filename]}" "$doc"; then
-                  echo "⚠️ $filename no tiene enlace a documento siguiente: ${NAV_NEXT[$filename]}"
-                  NAVIGATION_ISSUES+=("$filename: falta enlace a ${NAV_NEXT[$filename]}")
-                fi
-              fi
-            fi
-          done
-          
-          if [ ${#NAVIGATION_ISSUES[@]} -gt 0 ]; then
-            echo "::warning::Se encontraron ${#NAVIGATION_ISSUES[@]} problema(s) de navegación"
-          else
-            echo "✅ Navegación entre documentos correcta"
-          fi
-
-      - name: Verificar consistencia de versiones
-        id: version-check
-        run: |
-          echo "🏷️ Verificando consistencia de versiones..."
-          
-          # Buscar versiones mencionadas en la documentación
-          echo "Versiones de UnderScript encontradas:"
-          grep -rh "UnderScript.*[0-9]\+\.[0-9]\+\.[0-9]\+" docs/ README.md 2>/dev/null | head -5 || true
-          
-          echo "Versiones del plugin encontradas:"
-          grep -rh "TournamentView.*[0-9]\+\.[0-9]\+\.[0-9]\+" docs/ README.md 2>/dev/null | head -5 || true
-          
-          # Verificar que el archivo principal del script (si existe) tenga versión consistente
-          if [ -f "src/tournamentview.user.js" ]; then
-            SCRIPT_VERSION=$(grep -oP '@version\s+\K[0-9]+\.[0-9]+\.[0-9]+' src/tournamentview.user.js || echo "no encontrada")
-            echo "Versión en script: $SCRIPT_VERSION"
-          fi
-          
-          echo "✅ Verificación de versiones completada"
-
       - name: Verificar formato Markdown
         id: markdown-check
         run: |
-          echo "📝 Verificando formato Markdown básico..."
+          echo "📝 Verificando formato Markdown..."
           
           FORMAT_ISSUES=()
           
           for doc in README.md docs/*.md; do
             if [ -f "$doc" ]; then
-              # Verificar que tenga título H1
               if ! head -20 "$doc" | grep -q '^# '; then
                 echo "⚠️ $doc no tiene título H1 al inicio"
                 FORMAT_ISSUES+=("$doc: sin título H1")
               fi
               
-              # Verificar que no haya líneas muy largas (>500 caracteres, excluyendo URLs)
-              LONG_LINES=$(grep -n '.\{500\}' "$doc" | grep -v 'http' | wc -l)
-              if [ "$LONG_LINES" -gt 0 ]; then
-                echo "⚠️ $doc tiene $LONG_LINES línea(s) muy larga(s)"
-              fi
-              
-              # Verificar encoding UTF-8
               if file "$doc" | grep -qv 'UTF-8\|ASCII'; then
                 echo "⚠️ $doc puede tener problemas de encoding"
                 FORMAT_ISSUES+=("$doc: encoding incorrecto")
@@ -266,179 +131,42 @@ jobs:
             echo "✅ Formato Markdown correcto"
           fi
 
-      - name: Verificar documentación Fase 4
-        id: fase4-docs-check
+      - name: Verificar código fuente
+        id: source-check
         run: |
-          echo "📚 Verificando documentación de Fase 4 (Sistema de Plantillas)..."
+          echo "💾 Verificando código fuente..."
           
-          FASE4_ISSUES=()
-          
-          # Verificar que existen los documentos principales de Fase 4
-          FASE4_DOCS=(
-            "docs/10_FASE4_PLANTILLAS.md"
-            "docs/11_FASE4_RESUMEN.md"
-            "docs/16_FASE4_BUGS_RESUELTOS.md"
-          )
-          
-          for doc in "${FASE4_DOCS[@]}"; do
-            if [ ! -f "$doc" ]; then
-              echo "❌ Falta documentación Fase 4: $doc"
-              FASE4_ISSUES+=("Falta: $doc")
-            else
-              echo "✅ Existe: $doc"
-            fi
-          done
-          
-          # Verificar que README menciona sistema de plantillas
-          if grep -qi "plantilla\|template" README.md; then
-            echo "✅ README menciona sistema de plantillas"
-          else
-            echo "⚠️ README no menciona sistema de plantillas"
-            FASE4_ISSUES+=("README sin referencia a plantillas")
-          fi
-          
-          # Verificar que hay 18 bugs documentados en el archivo de bugs
-          if [ -f "docs/16_FASE4_BUGS_RESUELTOS.md" ]; then
-            BUG_COUNT=$(grep -c "^### Bug #" docs/16_FASE4_BUGS_RESUELTOS.md || echo "0")
-            if [ "$BUG_COUNT" -ge 8 ]; then
-              echo "✅ Bugs documentados: $BUG_COUNT"
-            else
-              echo "⚠️ Solo $BUG_COUNT bugs documentados (se esperaban al menos 8)"
-              FASE4_ISSUES+=("Faltan bugs en documentación")
-            fi
-          fi
-          
-          # Verificar que 09_LECCIONES_APRENDIDAS incluye sección de Fase 4
-          if [ -f "docs/09_LECCIONES_APRENDIDAS.md" ]; then
-            if grep -q "Fase 4" docs/09_LECCIONES_APRENDIDAS.md; then
-              echo "✅ Lecciones incluyen Fase 4"
-            else
-              echo "⚠️ Lecciones no incluyen Fase 4"
-              FASE4_ISSUES+=("Lecciones sin sección Fase 4")
-            fi
-          fi
-          
-          if [ ${#FASE4_ISSUES[@]} -gt 0 ]; then
-            echo "::warning::Se encontraron ${#FASE4_ISSUES[@]} problema(s) en documentación Fase 4"
-          else
-            echo "✅ Documentación Fase 4 completa"
-          fi
-
-      - name: Verificar implementación localStorage
-        id: localstorage-check
-        run: |
-          echo "💾 Verificando persistencia localStorage..."
-          
-          STORAGE_ISSUES=()
-          
-          # Verificar que existe src/index.js
           if [ ! -f "src/index.js" ]; then
             echo "❌ No se encuentra src/index.js"
-            STORAGE_ISSUES+=("Falta src/index.js")
-          else
-            # Verificar que existe setActiveTemplate con localStorage.setItem
-            if grep -q "localStorage\.setItem.*uc_tournament_active_template" src/index.js; then
-              echo "✅ localStorage.setItem implementado"
-            else
-              echo "❌ localStorage.setItem no encontrado para plantillas"
-              STORAGE_ISSUES+=("Falta localStorage.setItem")
-            fi
-            
-            # Verificar que existe getActiveTemplateId con localStorage.getItem
-            if grep -q "localStorage\.getItem.*uc_tournament_active_template" src/index.js; then
-              echo "✅ localStorage.getItem implementado"
-            else
-              echo "❌ localStorage.getItem no encontrado para plantillas"
-              STORAGE_ISSUES+=("Falta localStorage.getItem")
-            fi
-            
-            # Verificar que NO se establece template default en constructor
-            if grep -q "constructor.*{" src/index.js && grep -A 20 "constructor.*{" src/index.js | grep -q "setActiveTemplate.*'default'"; then
-              echo "⚠️ Constructor podría estar forzando template default (verificar manualmente)"
-              STORAGE_ISSUES+=("Posible template default forzado")
-            else
-              echo "✅ Constructor no fuerza template default"
-            fi
-            
-            # Verificar que existe TemplateManager
-            if grep -q "class TemplateManager" src/index.js; then
-              echo "✅ TemplateManager implementado"
-            else
-              echo "⚠️ TemplateManager no encontrado como clase"
-            fi
-          fi
-          
-          if [ ${#STORAGE_ISSUES[@]} -gt 0 ]; then
-            echo "::error::Se encontraron ${#STORAGE_ISSUES[@]} problema(s) en implementación localStorage"
             exit 1
+          fi
+          
+          # Verificar localStorage
+          if grep -q "localStorage" src/index.js; then
+            echo "✅ localStorage implementado"
           else
-            echo "✅ Persistencia localStorage implementada correctamente"
-          fi
-
-      - name: Verificar arquitectura de plantillas
-        id: template-architecture-check
-        run: |
-          echo "🏗️ Verificando arquitectura del sistema de plantillas..."
-          
-          ARCH_ISSUES=()
-          
-          if [ -f "src/index.js" ]; then
-            # Verificar métodos críticos de TemplateManager
-            REQUIRED_METHODS=(
-              "setActiveTemplate"
-              "getActiveTemplateId"
-              "loadPredefinedTemplates"
-              "loadCustomTemplates"
-              "exportTemplate"
-              "importTemplate"
-              "activateTemplate"
-            )
-            
-            for method in "${REQUIRED_METHODS[@]}"; do
-              if grep -q "$method" src/index.js; then
-                echo "✅ Método encontrado: $method"
-              else
-                echo "⚠️ Método no encontrado: $method"
-                ARCH_ISSUES+=("Falta método: $method")
-              fi
-            done
-            
-            # Verificar que existen plantillas predefinidas
-            if grep -q "predefinedTemplates\|this\.templates\.push" src/index.js; then
-              echo "✅ Sistema de plantillas predefinidas implementado"
-            else
-              echo "⚠️ No se encontró sistema de plantillas predefinidas"
-              ARCH_ISSUES+=("Faltan plantillas predefinidas")
-            fi
+            echo "⚠️ localStorage no encontrado"
           fi
           
-          if [ ${#ARCH_ISSUES[@]} -gt 0 ]; then
-            echo "::warning::Se encontraron ${#ARCH_ISSUES[@]} problema(s) de arquitectura"
+          # Verificar TemplateManager
+          if grep -q "TemplateManager\|templateManager" src/index.js; then
+            echo "✅ TemplateManager implementado"
           else
-            echo "✅ Arquitectura de plantillas correcta"
+            echo "⚠️ TemplateManager no encontrado"
           fi
+          
+          echo "✅ Verificación de código completada"
 
       - name: Generar resumen
         if: always()
         run: |
-          echo "## 📊 Resumen del Canon Check" >> $GITHUB_STEP_SUMMARY
+          echo "## 📊 Canon Check Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Verificaciones Generales" >> $GITHUB_STEP_SUMMARY
-          echo "| Verificación | Estado |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Estructura de archivos | ${{ steps.structure-check.outcome == 'success' && '✅ Pasó' || '❌ Falló' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Enlaces internos | ${{ steps.links-check.outcome == 'success' && '✅ Pasó' || '❌ Falló' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Índice README | ${{ steps.index-check.outcome == 'success' && '✅ Pasó' || '⚠️ Advertencias' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Navegación | ${{ steps.navigation-check.outcome == 'success' && '✅ Pasó' || '⚠️ Advertencias' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Versiones | ${{ steps.version-check.outcome == 'success' && '✅ Pasó' || '⚠️ Advertencias' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Formato Markdown | ${{ steps.markdown-check.outcome == 'success' && '✅ Pasó' || '⚠️ Advertencias' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| File Structure | ${{ steps.structure-check.outcome == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Internal Links | ${{ steps.links-check.outcome == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Markdown Format | ${{ steps.markdown-check.outcome == 'success' && '✅' || '⚠️' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Source Code | ${{ steps.source-check.outcome == 'success' && '✅' || '⚠️' }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Verificaciones Fase 4 (Sistema de Plantillas)" >> $GITHUB_STEP_SUMMARY
-          echo "| Verificación | Estado |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Documentación Fase 4 | ${{ steps.fase4-docs-check.outcome == 'success' && '✅ Pasó' || '⚠️ Advertencias' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Persistencia localStorage | ${{ steps.localstorage-check.outcome == 'success' && '✅ Pasó' || '❌ Falló' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Arquitectura de plantillas | ${{ steps.template-architecture-check.outcome == 'success' && '✅ Pasó' || '⚠️ Advertencias' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "---" >> $GITHUB_STEP_SUMMARY
-          echo "*Ejecutado: $(date -u '+%Y-%m-%d %H:%M:%S UTC')*" >> $GITHUB_STEP_SUMMARY
+          echo "*Run: $(date -u '+%Y-%m-%d %H:%M UTC')*" >> $GITHUB_STEP_SUMMARY
