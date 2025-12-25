@@ -1,453 +1,138 @@
 # UC_TournamentView
 
-Plugin para [UnderScript](https://github.com/UCProjects/UnderScript) que moderniza la vista de espectador de [Undercards.net](https://undercards.net) con un sistema de plantillas visuales estilo torneo profesional.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/JoanJuan10/UC_TournamentView/releases)
+[![Status](https://img.shields.io/badge/status-beta-green.svg)](https://github.com/JoanJuan10/UC_TournamentView)
 
-## 📋 Descripción
+> Professional overlay plugin for [UnderScript](https://github.com/UCProjects/UnderScript) that transforms the [Undercards.net](https://undercards.net) spectator experience into an esports-style broadcast view.
 
-**UC_TournamentView** es un plugin para [UnderScript](https://github.com/UCProjects/UnderScript) que transforma la página de espectador (`/Spectate`) de Undercards en una experiencia visual moderna inspirada en transmisiones de esports.
+**[🇪🇸 Versión en Español](docs/README_ES.md)**
 
-### Estado actual: ✅ Beta funcional - Producción lista
+![UC_TournamentView Demo](https://via.placeholder.com/800x400?text=UC_TournamentView+Demo)
 
-El plugin está en **beta funcional completa** con todas las funcionalidades core implementadas y 0 bugs conocidos. El sistema de plantillas (Fase 4) está completado y la persistencia funciona correctamente.
+## ✨ Features
 
-**Build:** 90.3 KiB (compilado) | 150 KiB (fuente)  
-**Conformidad:** 98% ✅ | **Bugs:** 0 conocidos | **Fase actual:** Post-Fase 4
+- 🎨 **Template System** - 3 built-in templates + custom import/export
+- 🌐 **Multi-language** - English & Spanish with real-time switching
+- 📊 **Real-time Info** - HP, gold, souls, artifacts, cards, turn timer
+- 🎯 **Turn Indicator** - Visual animations for active player
+- 📜 **Action Log** - Floating panel with complete match history
+- 💾 **Persistence** - All settings saved automatically
 
-### Características implementadas:
+## 🚀 Quick Install
 
-- ✅ **Overlay de información en tiempo real**
-  - Nombres de jugadores
-  - HP con barras visuales dinámicas y gradientes de color
-  - Oro actual
-  - Almas (con imágenes extraídas del DOM)
-  - Artefactos (con imágenes y contadores actualizados)
-  - Cartas en mano, mazo y cementerio
-  - Turno actual y timer sincronizado (formato M:SS)
-  - Indicador visual de jugador activo con animación
+### Requirements
 
-- ✅ **Sistema multiidioma (i18n)**
-  - Soporte para Español e Inglés
-  - Configuración de idioma en settings
-  - 17 claves de traducción por idioma
-  - Cambio de idioma en tiempo real sin recargar
-  - Sistema de interpolación de parámetros
+1. Modern browser (Chrome, Firefox, Edge, Opera)
+2. [Tampermonkey](https://www.tampermonkey.net/)
+3. [UnderScript](https://github.com/UCProjects/UnderScript)
 
-- ✅ **Sistema de plantillas completo** (Fase 4)
-  - **3 plantillas predefinidas:**
-    1. Default Tournament View (morado/azul gradiente)
-    2. Classic Spectator (azul/blanco limpio)
-    3. Dark Mode Pro (negro/cyan/naranja)
-  - **Import/Export** de plantillas personalizadas (JSON)
-  - **Persistencia completa** con localStorage
-  - **Indicador visual** (⭐) en plantilla activa
-  - **Validación** de estructura JSON en importación
-  - **Gestión avanzada** con iconos por plantilla (activar/exportar/eliminar)
-  - **Regeneración automática** de UI al cambiar plantilla
-  - **18 métodos** en TemplateManager
+### Installation
 
-- ✅ **Extracción de datos del DOM**
-  - Almas desde `window.yourSoul`/`window.enemySoul` y fallback a `<img>`
-  - Artefactos con contadores desde `.artifact-group` y `.artifact-custom`
-  - Cementerio desde `.dust-counter` (índices invertidos corregidos)
-  - Imágenes URL construidas con fallbacks múltiples
+1. **Download**: [Latest Release](https://github.com/JoanJuan10/UC_TournamentView/releases/latest/download/tournamentview.user.js)
+2. **Install**: Click the file → Tampermonkey opens → Click "Install"
+3. **Enable**: Undercards.net → UnderScript menu → Settings → Plugins → TournamentView → ✅ Enable
+4. **Use**: Visit any match in `/Spectate` mode
 
-- ✅ **Overlay de resultados**
-  - Pantalla de victoria/derrota con animaciones
-  - Color verde (#10b981) para victoria, rojo (#ef4444) para derrota
-  - Estadísticas: turnos totales, HP final
-  - Auto-ocultado después de 5 segundos
+## 🎨 Templates
 
-- ✅ **Settings funcional**
-  - Toggle activar/desactivar plugin
-  - Selector de idioma
-  - Gestión de plantillas con iconos interactivos
-  - Importador de archivos JSON
+| Template | Style | Best For |
+|----------|-------|----------|
+| **Default** | Modern purple/blue gradients | General streaming |
+| **Classic Spectator** | Clean blue/white | Professional look |
+| **Dark Mode Pro** | Dark with cyan/orange accents | Night sessions |
 
-### Próximos pasos (Fase 5):
+### Custom Templates
 
-- 🎨 **Editor Visual de Plantillas** - Color picker para variables CSS
-- 🎬 **Animaciones avanzadas** - Transiciones personalizables
-- 📊 **Estadísticas históricas** - Guardar datos de partidas
-- 🌐 **Galería comunitaria** - Compartir plantillas online
-
-## 🎨 Sistema de Plantillas
-
-### Plantillas Predefinidas
-
-El plugin incluye 3 plantillas visuales predefinidas:
-
-1. **Default** - Diseño moderno con gradientes y animaciones suaves
-   - Colores: Púrpura (#667eea) y magenta (#764ba2)
-   - Estilo: Moderno con efectos glassmorphism
-   - Ideal para: Transmisiones casuales y streaming general
-
-2. **Minimal** - Diseño minimalista y limpio
-   - Colores: Grises y azul plano (#3498db)
-   - Estilo: Flat design sin efectos complejos
-   - Ideal para: Pantallas pequeñas y bajo consumo de recursos
-
-3. **Esports** - Estilo broadcast profesional
-   - Colores: Azul marino (#0a1929) y dorado (#ffd700)
-   - Estilo: Efectos de brillo, animaciones dramáticas
-   - Ideal para: Torneos profesionales y eventos competitivos
-
-### Cambiar Plantilla
-
-1. Abre los **Settings de UnderScript**
-2. Ve a la categoría **"Plantillas"**
-3. Haz clic en el **icono de estrella** (⭐) de la plantilla que deseas activar
-4. La interfaz se regenerará automáticamente con el nuevo estilo
-
-**Iconos disponibles:**
-- ⭐ **Estrella llena (verde)**: Plantilla actualmente activa
-- ☆ **Estrella vacía (gris)**: Click para activar esta plantilla
-- 💾 **Descarga (azul)**: Exportar plantilla como JSON
-- 🗑️ **Papelera (rojo)**: Eliminar plantilla custom (solo plantillas importadas)
-
-### Exportar Plantilla
-
-Para guardar una plantilla y compartirla:
-
-1. En la categoría **"Plantillas"** de los settings
-2. Haz clic en el **icono de descarga** (💾) de la plantilla que deseas exportar
-3. Se descargará un archivo JSON con toda la configuración
-4. Comparte este archivo con otros usuarios
-
-### Importar Plantilla
-
-Para usar una plantilla personalizada:
-
-1. En la categoría **"Plantillas"** de los settings
-2. Usa el **selector de archivo** al inicio de la lista
-3. Selecciona un archivo `.json` de plantilla
-4. El sistema validará la plantilla automáticamente
-5. Si es válida, se añadirá a la lista y se activará automáticamente
-6. Las plantillas importadas se guardan en localStorage
-
-**Nota:** Las plantillas predefinidas (Default, Minimal, Esports) no se pueden eliminar.
-
-### Crear Plantilla Personalizada
-
-Las plantillas son archivos JSON con esta estructura:
+Create your own template as JSON:
 
 ```json
 {
   "metadata": {
-    "id": "mi-plantilla",
-    "name": "Mi Plantilla Épica",
+    "id": "my-template",
+    "name": "My Template",
     "version": "1.0.0",
-    "author": "Tu Nombre",
-    "description": "Descripción de tu plantilla",
-    "created": "2025-12-24",
-    "modified": "2025-12-24",
-    "tags": ["custom", "epic"]
+    "author": "Your Name"
   },
   "variables": {
-    "primaryColor": "#ff0000",
-    "secondaryColor": "#00ff00",
-    "accentColor": "#0000ff",
-    "backgroundColor": "#ffffff",
-    "textColor": "#000000"
+    "primaryColor": "#6a0dad",
+    "secondaryColor": "#00bcd4"
   },
-  "customCSS": "/* Tu CSS personalizado aquí */"
+  "customCSS": "/* Your CSS here */"
 }
 ```
 
-**Campos obligatorios:**
-- `metadata.id`: Identificador único (sin espacios)
-- `metadata.name`: Nombre visible de la plantilla
-- `metadata.version`: Versión (formato semver)
-- `variables`: Objeto con colores base (primaryColor, secondaryColor, etc.)
-- `customCSS`: String con todo el CSS de la plantilla
+See [Template Guide](docs/TEMPLATE_GUIDE.md) for details.
 
-**Variables CSS disponibles:**
-- Todas las variables se inyectan en `:root` con prefijo `--tv-`
-- Ejemplo: `primaryColor` → `var(--tv-primary-color)`
-- Convierte camelCase automáticamente a kebab-case
+## ⚙️ Configuration
 
-Para más detalles técnicos, consulta [docs/10_FASE4_PLANTILLAS.md](docs/10_FASE4_PLANTILLAS.md)
+Access settings via: **UnderScript Menu → Plugins → TournamentView**
 
-## 🔧 Requisitos
+| Option | Description | Default |
+|--------|-------------|---------|
+| Enable | Turn plugin on/off | Off |
+| Language | English or Spanish | Spanish |
+| Template | Active visual template | Default |
 
-1. **Navegador compatible** con extensiones de UserScripts:
-   - Chrome, Firefox, Edge, Opera, Safari, etc.
+### Template Management
 
-2. **TamperMonkey** (o gestor de UserScripts compatible):
-   - [Instalar TamperMonkey](https://www.tampermonkey.net/)
+- ⭐ **Star icon** - Activate template
+- 💾 **Download icon** - Export as JSON
+- 🗑️ **Trash icon** - Delete custom templates
 
-3. **UnderScript** (UserScript base requerido):
-   - [Instalar UnderScript](https://github.com/UCProjects/UnderScript/releases/latest/download/undercards.user.js)
+## 🛠️ Development
 
-## 📥 Instalación
-
-### Para Usuarios Finales
-
-El plugin está en beta funcional y puede usarse para ver partidas en Spectate:
-
-1. Instala [TamperMonkey](https://www.tampermonkey.net/)
-2. Instala [UnderScript](https://github.com/UCProjects/UnderScript/releases/latest/download/undercards.user.js)
-3. Descarga el plugin desde [Releases](https://github.com/JoanJuan10/UC_TournamentView/releases) (o usa `dist/tournamentview.user.js`)
-4. TamperMonkey detectará el archivo `.user.js` automáticamente
-5. Navega a una partida en modo Spectate en Undercards.net
-6. Verás el overlay automáticamente (si está activado en settings)
-
-### Para Desarrolladores
-
-Este plugin usa el [template oficial de UCProjects](https://github.com/UCProjects/plugin-template) con webpack para el build.
-
-#### Requisitos
-
-- [Node.js](https://nodejs.org/) (v12 o superior)
-- [Git](https://git-scm.com/)
-- [TamperMonkey](https://www.tampermonkey.net/)
-- [UnderScript](https://github.com/UCProjects/UnderScript/releases/latest/download/undercards.user.js)
-
-#### Instalación
-
-1. Clona el repositorio:
 ```bash
 git clone https://github.com/JoanJuan10/UC_TournamentView.git
 cd UC_TournamentView
-```
-
-2. Instala las dependencias:
-```bash
 npm install
+npm start    # Watch mode
+npm run build  # Production build
 ```
 
-3. Compila el plugin:
-```bash
-npm run build
-```
-
-4. El archivo compilado estará en `dist/tournamentview.user.js`
-5. Instálalo en TamperMonkey arrastrando el archivo al navegador
-
-#### Desarrollo en Tiempo Real
-
-Para desarrollo activo con recompilación automática:
-
-```bash
-npm start
-```
-
-Esto ejecutará webpack en modo watch. Cada vez que guardes cambios en `src/index.js`, el plugin se recompilará automáticamente en `dist/tournamentview.user.js`.
-
-## ⚙️ Configuración
-
-El plugin incluye un sistema de configuración funcional accesible desde el menú de UnderScript.
-
-Accede a la configuración del plugin desde:
-- **Menú de UnderScript** → Plugins → TournamentView
-
-### Opciones disponibles:
-- ✅ **Activar/Desactivar Tournament View** - Control completo del plugin
-  - Al desactivar se remueve completamente el overlay y CSS
-  - Al activar se inicializa automáticamente en páginas de Spectate
-  - El estado persiste entre recargas de página
-
-### Próximamente:
-- Seleccionar plantilla activa
-- Importar plantilla (JSON)
-- Exportar plantilla actual
-- Personalizar colores y posiciones
-- Activar/desactivar elementos individuales del overlay
-- Ajustar tamaños de fuentes y elementos
-
-## 🛠️ Desarrollo
-
-### Estructura del Proyecto
+### Project Structure
 
 ```
-UC_TournamentView/
-├── src/
-│   └── index.js              # Código fuente principal
-├── dist/
-│   ├── tournamentview.user.js  # Script compilado
-│   └── tournamentview.meta.js  # Metadatos para actualizaciones
-├── docs/                      # Documentación técnica
-├── templates/                 # Plantillas de diseño
-├── package.json              # Configuración npm
-├── webpack.config.js         # Configuración webpack
-└── README.md
+├── src/index.js           # Main source (~4900 lines)
+├── dist/                  # Compiled output (~102 KiB)
+├── docs/                  # Documentation
+└── templates/             # Template examples
 ```
 
-### Scripts Disponibles
+## 📚 Documentation
 
-| Comando | Descripción |
-|---------|-------------|
-| `npm install` | Instala las dependencias del proyecto |
-| `npm start` | Inicia webpack en modo watch (desarrollo) |
-| `npm run build` | Compila el plugin para producción |
+| Document | Description |
+|----------|-------------|
+| [User Guide](docs/USER_GUIDE.md) | How to use the plugin |
+| [Development Guide](docs/DEVELOPMENT.md) | Setup and architecture |
+| [Template Guide](docs/TEMPLATE_GUIDE.md) | Create custom templates |
+| [API Reference](docs/API.md) | Technical documentation |
 
-### Flujo de Trabajo
+## 🤝 Contributing
 
-1. Edita el código en `src/index.js`
-2. Ejecuta `npm start` para modo watch
-3. Los cambios se recompilan automáticamente en `dist/`
-4. Recarga la página de Undercards para ver los cambios
-5. Para producción, usa `npm run build`
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add AmazingFeature'`)
+4. Push (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-### Basado en el Template Oficial
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-Este proyecto sigue el [template oficial de UCProjects](https://github.com/UCProjects/plugin-template), que incluye:
-- Webpack para bundling y minificación
-- `checkerV2.js` para compatibilidad con UnderScript
-- Gestión automática de versiones desde `package.json`
-- Generación de archivos `.meta.js` para actualizaciones
+## 🐛 Issues & Requests
 
-## 📚 Documentación
+- **Bug Reports**: [Open an issue](https://github.com/JoanJuan10/UC_TournamentView/issues/new?template=bug_report.md)
+- **Feature Requests**: [Open an issue](https://github.com/JoanJuan10/UC_TournamentView/issues/new?template=feature_request.md)
 
-### 📖 Documentación Completa
+## 📝 License
 
-Para acceder a toda la documentación del proyecto, consulta:
+MIT License - see [LICENSE](LICENSE) for details.
 
-**→ [Índice de Documentación](docs/00_INDICE.md)** ← Punto de entrada principal
+## 🔗 Links
 
-### 🚀 Guías Rápidas
-
-| Documento | Descripción |
-|-----------|-------------|
-| [00_INDICE.md](docs/00_INDICE.md) | **Índice completo de toda la documentación** |
-| [06_ESPECIFICACION_PROYECTO.md](docs/06_ESPECIFICACION_PROYECTO.md) | Especificación técnica del proyecto |
-| [11_FASE4_RESUMEN.md](docs/11_FASE4_RESUMEN.md) | Implementación completa del sistema de plantillas |
-| [12_CANON_CHECK.md](docs/12_CANON_CHECK.md) | Validación de conformidad del código (98% ✅) |
-| [TESTING_GUIDE.md](docs/TESTING_GUIDE.md) | Guía completa de pruebas del sistema |
-| [07_DESARROLLO.md](docs/07_DESARROLLO.md) | Guía de desarrollo con webpack |
-
-### 📋 Documentación Técnica Base
-
-| Documento | Descripción |
-|-----------|-------------|
-| [01_TAMPERMONKEY.md](docs/01_TAMPERMONKEY.md) | Estructura de UserScripts, headers y webpack |
-| [02_UNDERSCRIPT_PLUGIN_API.md](docs/02_UNDERSCRIPT_PLUGIN_API.md) | API de plugins de UnderScript |
-| [03_EVENTOS_JUEGO.md](docs/03_EVENTOS_JUEGO.md) | Eventos del juego para Spectate |
-| [04_VARIABLES_GLOBALES.md](docs/04_VARIABLES_GLOBALES.md) | Variables globales accesibles |
-| [05_LIBRERIAS_INCLUIDAS.md](docs/05_LIBRERIAS_INCLUIDAS.md) | Librerías disponibles en UnderScript |
-
-### 🏗️ Fases de Desarrollo
-
-| Documento | Descripción |
-|-----------|-------------|
-| [09_FASE_3_DETALLES_IMPLEMENTACION.md](docs/09_FASE_3_DETALLES_IMPLEMENTACION.md) | Fase 3: Sistema i18n completo |
-| [10_FASE4_PLANTILLAS.md](docs/10_FASE4_PLANTILLAS.md) | Fase 4: Arquitectura del sistema de plantillas |
-| [11_FASE4_RESUMEN.md](docs/11_FASE4_RESUMEN.md) | Fase 4: Resumen de implementación (650+ líneas) |
-
-### 📁 Ejemplos
-
-| Archivo | Descripción |
-|---------|-------------|
-| [example_template.json](templates/example_template.json) | Plantilla de ejemplo con comentarios |
-
-## 🗺️ Roadmap
-
-### Fase 1 - Fundamentos ✅ (Completado)
-- [x] Documentación técnica completa
-- [x] Configuración Git y CI/CD
-- [x] Migración al template oficial de UCProjects
-- [x] Configuración de webpack y build system
-- [x] Registro básico del plugin en UnderScript
-
-### Fase 2 - Sistema de Plantillas y UI ✅ (Completado)
-- [x] Sistema de plantillas (JSON + CSS con variables)
-- [x] Módulo de estado del juego (GameState)
-- [x] Manejadores de eventos completos
-- [x] Inyección y remoción de CSS dinámico
-- [x] UI Manager con overlay funcional:
-  - [x] Header con información de jugadores
-  - [x] HP con barras visuales
-  - [x] Oro, almas y artefactos
-  - [x] Contador de cartas (mano, mazo, cementerio)
-  - [x] Turno actual y timer (M:SS)
-  - [x] Indicador visual de jugador activo
-  - [x] Overlay de resultados (victoria/derrota)
-- [x] Extracción de datos del DOM:
-  - [x] Almas desde elementos `<img>`
-  - [x] Artefactos con contadores desde `.artifact-custom`
-  - [x] Cementerio desde `.dust-counter` (índices invertidos)
-- [x] Settings funcional con activar/desactivar
-- [x] Timer sincronizado con `window.global('time')`
-
-### Fase 3 - Mejoras Visuales ✅ (Completado)
-- [x] Animaciones de HP con efectos visuales (shake en daño, pulse en curación)
-- [x] Sistema de notificaciones flotantes
-- [x] Efectos visuales en eventos importantes:
-  - [x] Cartas jugadas (notificación verde)
-  - [x] Hechizos usados (notificación púrpura)
-  - [x] Monstruos destruidos (notificación roja)
-  - [x] Efectos de artefactos (notificación dorada + glow en icono)
-  - [x] Efectos de almas (notificación azul + glow en icono)
-- [x] Panel de historial colapsable
-  - [x] Muestra últimas 30 acciones
-  - [x] Botón flotante para toggle
-  - [x] Categorización por tipo de evento
-  - [x] Auto-scroll a nuevas entradas
-  - [x] Integración con historial nativo de Underscript
-- [x] Responsive design con 3 breakpoints
-  - [x] 1280px: Layout compacto
-  - [x] 768px: Layout vertical
-  - [x] 480px: Optimizado para móviles
-- [x] Sistema multiidioma (i18n)
-  - [x] Soporte para Español e Inglés
-  - [x] Configuración de idioma en settings
-  - [x] 17 claves de traducción por idioma
-  - [x] Sistema de interpolación de parámetros
-  - [x] Regeneración automática de UI al cambiar idioma
-
-### Fase 4 - Gestión de Plantillas ✅ (Completado)
-- [x] Sistema multi-plantilla completo
-- [x] 3 plantillas predefinidas (Default, Classic Spectator, Dark Mode Pro)
-- [x] Importar/Exportar plantillas personalizadas con FileReader y Blob APIs
-- [x] Gestión avanzada con custom settings (patrón FakeSetting de uc_replays.js)
-  - [x] Iconos por plantilla: activar (⭐), exportar (💾), eliminar (🗑️)
-  - [x] Protección de plantillas predefinidas (no se pueden eliminar)
-  - [x] Actualización dinámica de lista sin recrear settings
-  - [x] Indicador visual de plantilla activa
-- [x] Validación completa de estructura de plantillas (metadata + variables + customCSS)
-- [x] Persistencia bidireccional con localStorage
-  - [x] `localStorage.setItem()` en `setActiveTemplate()`
-  - [x] `localStorage.getItem()` en `getActiveTemplateId()`
-  - [x] Sin forzar template default en constructor
-- [x] 18 métodos en TemplateManager
-- [x] 18 bugs resueltos durante implementación (Bug #11 a #18)
-- [x] Documentación completa (650+ líneas en docs/)
-- [x] Conformidad validada: 98% ✅
-
-**Estado**: Completamente funcional y en producción  
-**Build**: 90.3 KiB (compilado) | 150 KiB (fuente)  
-**Bugs conocidos**: 0  
-**Documentación**:
-- [10_FASE4_PLANTILLAS.md](docs/10_FASE4_PLANTILLAS.md) - Arquitectura del sistema
-- [11_FASE4_RESUMEN.md](docs/11_FASE4_RESUMEN.md) - Resumen de implementación
-- [16_FASE4_BUGS_RESUELTOS.md](docs/16_FASE4_BUGS_RESUELTOS.md) - 18 bugs documentados
-- [09_LECCIONES_APRENDIDAS.md](docs/09_LECCIONES_APRENDIDAS.md) - Lecciones técnicas completas
-
-### Fase 5 - Integraciones (Futuro)
-- [ ] Soporte para Challonge
-- [ ] Integración con sistemas de torneo
-- [ ] Exportación de datos de partida
-- [ ] API para extensiones de terceros
-
-## 🤝 Contribuir
-
-¿Quieres contribuir al proyecto? ¡Genial!
-
-1. Haz fork del repositorio
-2. Crea una rama para tu feature (`git checkout -b feature/nueva-plantilla`)
-3. Realiza tus cambios y haz commit
-4. Envía un Pull Request
-
-## 📄 Licencia
-
-Este proyecto está bajo la licencia especificada en [LICENSE](LICENSE).
-
-## 🔗 Enlaces Útiles
-
-- [Undercards.net](https://undercards.net) - Juego original
-- [UnderScript GitHub](https://github.com/UCProjects/UnderScript) - UserScript base
-- [TamperMonkey](https://www.tampermonkey.net/) - Gestor de UserScripts
-- [Documentación TamperMonkey (ES)](https://www.tampermonkey.net/documentation.php?locale=es)
+- [Undercards.net](https://undercards.net)
+- [UnderScript](https://github.com/UCProjects/UnderScript)
+- [Tampermonkey](https://www.tampermonkey.net/)
 
 ---
 
-*Desarrollado con ❤️ para la comunidad de Undercards*
+**Made with ❤️ by [JoanJuan10](https://github.com/JoanJuan10) & HectorPSI**
