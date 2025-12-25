@@ -221,8 +221,7 @@ class TemplateManager {
         // Cargar plantillas custom desde localStorage
         this.loadCustomTemplates();
         
-        // Establecer plantilla por defecto
-        this.setActiveTemplate('default');
+        // NO establecer plantilla por defecto aquí - se hace después de leer localStorage
     }
 
     /**
@@ -279,8 +278,17 @@ class TemplateManager {
                 const customs = JSON.parse(stored);
                 this.customTemplates = Array.isArray(customs) ? customs : [];
                 
+                console.log('[TournamentView] 🔍 Cargando plantillas custom desde localStorage:', this.customTemplates.length);
+                
                 // Registrar cada plantilla custom
                 this.customTemplates.forEach(template => {
+                    // Asegurar que las plantillas custom tengan isPredefined en false
+                    if (template.metadata) {
+                        template.metadata.isPredefined = false;
+                        console.log('[TournamentView] ✅ Plantilla custom marcada como NO predefinida:', template.metadata.id, template.metadata.name);
+                    } else {
+                        console.warn('[TournamentView] ⚠️ Plantilla sin metadata:', template);
+                    }
                     this.registerTemplate(template);
                 });
                 
@@ -304,6 +312,15 @@ class TemplateManager {
         }
         
         this.activeTemplate = template;
+        
+        // Guardar en localStorage para persistencia
+        try {
+            localStorage.setItem('uc_tournament_active_template', templateId);
+            console.log('[TournamentView] Plantilla guardada en localStorage:', templateId);
+        } catch (e) {
+            console.error('[TournamentView] Error guardando plantilla en localStorage:', e);
+        }
+        
         console.log('[TournamentView] Plantilla activa:', template.metadata.name);
         return true;
     }
@@ -337,11 +354,21 @@ class TemplateManager {
     }
 
     /**
-     * Obtiene el ID de la plantilla actualmente activa
-     * @returns {string} ID de la plantilla activa
+     * Obtiene el ID de la plantilla actualmente activa desde localStorage
+     * @returns {string|null} ID de la plantilla activa o null
      */
     getActiveTemplateId() {
-        return this.activeTemplate ? this.activeTemplate.metadata.id : null;
+        try {
+            const savedId = localStorage.getItem('uc_tournament_active_template');
+            if (savedId) {
+                return savedId;
+            }
+        } catch (e) {
+            console.error('[TournamentView] Error leyendo plantilla desde localStorage:', e);
+        }
+        
+        // Fallback: usar la plantilla activa en memoria o default
+        return this.activeTemplate ? this.activeTemplate.metadata.id : 'default';
     }
 
     /**
@@ -350,10 +377,10 @@ class TemplateManager {
      * @returns {boolean} True si se eliminó correctamente
      */
     deleteTemplate(templateId) {
-        // No permitir eliminar plantillas predefinidas
-        const predefinedIds = ['default', 'minimal', 'esports'];
-        if (predefinedIds.includes(templateId)) {
-            console.error('[TournamentView] No se pueden eliminar plantillas predefinidas');
+        // Verificar que la plantilla no sea predefinida
+        const template = this.templates.find(t => t.metadata.id === templateId);
+        if (template && template.metadata.isPredefined) {
+            console.error('[TournamentView] No se puede eliminar una plantilla predefinida:', templateId);
             return false;
         }
         
@@ -361,16 +388,22 @@ class TemplateManager {
         const index = this.templates.findIndex(t => t.metadata.id === templateId);
         if (index >= 0) {
             this.templates.splice(index, 1);
-            console.log('[TournamentView] Plantilla eliminada:', templateId);
+            console.log('[TournamentView] Plantilla eliminada de templates:', templateId);
             
             // Eliminar de customTemplates también
             const customIndex = this.customTemplates.findIndex(t => t.metadata.id === templateId);
             if (customIndex >= 0) {
                 this.customTemplates.splice(customIndex, 1);
+                console.log('[TournamentView] Plantilla eliminada de customTemplates:', templateId);
             }
             
-            // Actualizar localStorage
-            this.saveCustomTemplates();
+            // Guardar customTemplates en localStorage
+            try {
+                localStorage.setItem('uc_tournament_custom_templates', JSON.stringify(this.customTemplates));
+                console.log('[TournamentView] localStorage actualizado. Plantillas restantes:', this.customTemplates.length);
+            } catch (error) {
+                console.error('[TournamentView] Error actualizando localStorage:', error);
+            }
             
             return true;
         }
@@ -409,6 +442,9 @@ class TemplateManager {
                     error: `Plantilla inválida: ${validation.errors.join(', ')}`
                 };
             }
+            
+            // Marcar como NO predefinida (plantilla importada por usuario)
+            template.metadata.isPredefined = false;
             
             // Registrar plantilla
             this.registerTemplate(template);
@@ -491,26 +527,6 @@ class TemplateManager {
     }
 
     /**
-     * Elimina una plantilla custom
-     */
-    deleteCustomTemplate(templateId) {
-        // Filtrar de customTemplates
-        this.customTemplates = this.customTemplates.filter(t => t.metadata.id !== templateId);
-        
-        // Filtrar de templates
-        this.templates = this.templates.filter(t => t.metadata.id !== templateId);
-        
-        // Guardar en localStorage
-        try {
-            localStorage.setItem('uc_tournament_custom_templates', JSON.stringify(this.customTemplates));
-            console.log('[TournamentView] Plantilla custom eliminada:', templateId);
-            return true;
-        } catch (error) {
-            console.error('[TournamentView] Error eliminando plantilla custom:', error);
-            return false;
-        }
-    }
-
     /**
      * Inyecta el CSS de la plantilla activa
      */
@@ -591,7 +607,8 @@ ${customCSS}
                 description: 'Plantilla por defecto con diseño moderno y gradientes vibrantes',
                 created: '2025-12-24',
                 modified: '2025-12-24',
-                tags: ['default', 'modern', 'gradient']
+                tags: ['default', 'modern', 'gradient'],
+                isPredefined: true
             },
             variables: {
                 primaryColor: '#667eea',
@@ -1428,7 +1445,8 @@ ${customCSS}
                 description: 'Diseño minimalista con colores planos y solo información esencial',
                 created: '2025-12-24',
                 modified: '2025-12-24',
-                tags: ['minimal', 'clean', 'simple']
+                tags: ['minimal', 'clean', 'simple'],
+                isPredefined: true
             },
             variables: {
                 primaryColor: '#2c3e50',
@@ -1849,7 +1867,8 @@ ${customCSS}
                 description: 'Estilo de transmisión profesional con efectos dramáticos y colores corporativos',
                 created: '2025-12-24',
                 modified: '2025-12-24',
-                tags: ['esports', 'professional', 'broadcast']
+                tags: ['esports', 'professional', 'broadcast'],
+                isPredefined: true
             },
             variables: {
                 primaryColor: '#0a1929',
@@ -3385,6 +3404,10 @@ const languageSetting = plugin.settings().add({
 // Sistema de Gestión de Plantillas
 // ========================================
 
+// Mapa global para almacenar datos de plantilla por settingKey
+// Esto nos permite recuperar templateId y canDelete incluso cuando UnderScript corrompe el value
+const templateDataBySettingKey = new Map();
+
 // Clase base para settings personalizados
 class FakeSetting extends underscript.utils.SettingType {
     value(val) {
@@ -3403,51 +3426,106 @@ class TemplateElement extends FakeSetting {
     constructor(name = 'templateElement') {
         super(name);
     }
-    element(value, update, { remove = false }) {
-        const isActive = value && value.active;
-        const canDelete = value && value.canDelete;
+    element(value, update, { remove = false, key = '' }) {
+        // Intentar obtener templateId desde múltiples fuentes
+        let templateId = null;
         
-        console.log('[TemplateElement] Creando elemento con value:', value);
-        
-        // Crear spans con glyphicons como en uc_replays.js
-        const activateIcon = $(`<span class="glyphicon ${isActive ? 'glyphicon-star' : 'glyphicon-star-empty'}" 
-            style="cursor: pointer; padding-right: 8px; color: ${isActive ? '#5cb85c' : '#999'};" 
-            title="${isActive ? 'Plantilla activa' : 'Activar plantilla'}"></span>`)
-            .on('click', e => {
-                e.preventDefault();
-                console.log('[TemplateElement] Activar clicked');
-                update('activate');
-            });
-        
-        const exportIcon = $(`<span class="glyphicon glyphicon-download-alt" 
-            style="cursor: pointer; padding-right: 8px; color: #337ab7;" 
-            title="Exportar plantilla"></span>`)
-            .on('click', e => {
-                e.preventDefault();
-                console.log('[TemplateElement] Exportar clicked');
-                update('export');
-            });
-        
-        // Usar .add() para concatenar como en uc_replays.js
-        let result = activateIcon.add(exportIcon);
-        
-        if (canDelete) {
-            const deleteIcon = $(`<span class="glyphicon glyphicon-trash" 
-                style="cursor: pointer; padding-right: 8px; color: #d9534f;" 
-                title="Eliminar plantilla"></span>`)
-                .on('click', e => {
-                    e.preventDefault();
-                    console.log('[TemplateElement] Eliminar clicked');
-                    update('delete');
-                });
-            
-            result = result.add(deleteIcon);
+        // 1. Desde el value si es un objeto válido
+        if (value && typeof value === 'object' && value.templateId) {
+            templateId = value.templateId;
         }
         
-        return result;
+        // 2. Desde el mapa global usando el key
+        if (!templateId && key) {
+            const fullKey = key.startsWith('underscript.plugin.TournamentView.') 
+                ? key 
+                : `underscript.plugin.TournamentView.${key}`;
+            const data = templateDataBySettingKey.get(fullKey);
+            if (data) {
+                templateId = data.templateId;
+            }
+        }
+        
+        // 3. Extraer de la key si tiene el formato 'template_XXXXX'
+        if (!templateId && key) {
+            const match = key.match(/template_(.+)$/);
+            if (match) {
+                templateId = match[1];
+            }
+        }
+        
+        // Intentar obtener canDelete desde múltiples fuentes
+        let canDelete = false;
+        
+        // 1. Desde el value si es un objeto válido
+        if (value && typeof value === 'object' && value.canDelete !== undefined) {
+            canDelete = value.canDelete;
+        }
+        
+        // 2. Desde el mapa global usando templateId
+        if (canDelete === false && templateId) {
+            const fullKey = key.startsWith('underscript.plugin.TournamentView.') 
+                ? key 
+                : `underscript.plugin.TournamentView.${key}`;
+            const data = templateDataBySettingKey.get(fullKey);
+            if (data && data.canDelete !== undefined) {
+                canDelete = data.canDelete;
+            }
+        }
+        
+        const isActive = value && typeof value === 'object' && value.active;
+        
+        console.log('[TemplateElement] 🎨 Creando elemento visual:', {
+            value: value,
+            valueType: typeof value,
+            isActive: isActive,
+            canDelete: canDelete,
+            templateId: templateId,
+            remove: remove
+        });
+        
+        // Si no tenemos templateId, no podemos renderizar correctamente
+        if (!templateId) {
+            console.error('[TemplateElement] No se encontró templateId en el value:', value);
+            return $('<span style="color: red;">Error: templateId no encontrado</span>');
+        }
+        
+        // Container para los iconos (UnderScript ya muestra el name del setting)
+        const container = $('<span style="white-space: nowrap;"></span>');
+        
+        // Icono de activar (estrella llena si activa, vacía si no)
+        const activateIcon = $(`<span class="glyphicon ${isActive ? 'glyphicon-star' : 'glyphicon-star-empty'} template-action-icon" 
+            style="cursor: pointer; margin-right: 8px; color: ${isActive ? '#5cb85c' : '#999'};" 
+            title="${isActive ? 'Plantilla activa' : 'Activar plantilla'}" 
+            data-template-id="${templateId}" 
+            data-action="activate"></span>`);
+        
+        // Icono de exportar
+        const exportIcon = $(`<span class="glyphicon glyphicon-download-alt template-action-icon" 
+            style="cursor: pointer; margin-right: 8px; color: #337ab7;" 
+            title="Exportar plantilla" 
+            data-template-id="${templateId}" 
+            data-action="export"></span>`);
+        
+        container.append(activateIcon).append(exportIcon);
+        
+        // Icono de eliminar (solo para plantillas custom)
+        if (canDelete) {
+            const deleteIcon = $(`<span class="glyphicon glyphicon-trash template-action-icon" 
+                style="cursor: pointer; margin-right: 8px; color: #d9534f;" 
+                title="Eliminar plantilla" 
+                data-template-id="${templateId}" 
+                data-action="delete"></span>`);
+            
+            container.append(deleteIcon);
+        } else {
+            console.log('[TemplateElement] NO se añade botón eliminar - canDelete:', canDelete);
+        }
+        
+        return container;
     }
     labelFirst() {
-        return false;  // Iconos a la derecha como en uc_replays.js
+        return true;  // Label primero (nombre), luego los iconos
     }
 }
 
@@ -3524,174 +3602,139 @@ function activateTemplate(templateId) {
         // Inyectar CSS de la nueva plantilla
         templateManager.injectCSS();
         
-        // Si hay UI activa, regenerarla con la nueva plantilla
+        // Si hay UI activa, regenerarla con la nueva plantilla (de forma asíncrona)
         if (uiManager.container) {
             console.log('[TournamentView] Regenerando UI con nueva plantilla');
-            uiManager.destroy();
-            uiManager.initialize();
             
-            // Si hay una partida activa, restaurar todos los datos visuales
-            if (gameState.isActive) {
-                console.log('[TournamentView] Restaurando datos visuales de la partida');
-                
-                // Actualizar nombres de jugadores
-                uiManager.updatePlayerNames();
-                
-                // Actualizar souls
-                if (gameState.player.soul) {
-                    uiManager.updateSoul('player', gameState.player.soul);
+            // Usar setTimeout para salir del contexto del onChange
+            setTimeout(() => {
+                try {
+                    // Guardar estado antes de destruir
+                    const hadActiveGame = gameState.isActive;
+                    
+                    uiManager.destroy();
+                    uiManager.initialize();
+                    
+                    // Si había una partida activa, restaurar todos los datos visuales
+                    if (hadActiveGame && gameState.isActive) {
+                        console.log('[TournamentView] Restaurando datos visuales de la partida');
+                        
+                        // Actualizar nombres de jugadores
+                        uiManager.updatePlayerNames();
+                        
+                        // Actualizar souls
+                        if (gameState.player.soul) {
+                            uiManager.updateSoul('player', gameState.player.soul);
+                        }
+                        if (gameState.opponent.soul) {
+                            uiManager.updateSoul('opponent', gameState.opponent.soul);
+                        }
+                        
+                        // Actualizar jugador activo
+                        if (gameState.currentPlayer && typeof uiManager.updateActivePlayer === 'function') {
+                            uiManager.updateActivePlayer(gameState.currentPlayer);
+                        }
+                        
+                        // Actualizar estadísticas del jugador (acceso directo a propiedades)
+                        if (gameState.player && typeof uiManager.updatePlayerStats === 'function') {
+                            uiManager.updatePlayerStats(
+                                gameState.player.name,
+                                gameState.player.hp,
+                                gameState.player.maxHp,
+                                gameState.player.gold,
+                                gameState.player.hand,
+                                gameState.player.deck,
+                                gameState.player.graveyard,
+                                gameState.player.artifacts
+                            );
+                        }
+                        
+                        // Actualizar estadísticas del oponente (acceso directo a propiedades)
+                        if (gameState.opponent && typeof uiManager.updateOpponentStats === 'function') {
+                            uiManager.updateOpponentStats(
+                                gameState.opponent.name,
+                                gameState.opponent.hp,
+                                gameState.opponent.maxHp,
+                                gameState.opponent.gold,
+                                gameState.opponent.hand,
+                                gameState.opponent.deck,
+                                gameState.opponent.graveyard,
+                                gameState.opponent.artifacts
+                            );
+                        }
+                        
+                        // Actualizar tablero (acceso directo a propiedades)
+                        if (gameState.playerBoard && gameState.opponentBoard && typeof uiManager.updateBoard === 'function') {
+                            uiManager.updateBoard(gameState.playerBoard, gameState.opponentBoard);
+                        }
+                        
+                        // Actualizar turno
+                        if (gameState.turn > 0 && typeof uiManager.updateTurn === 'function') {
+                            uiManager.updateTurn(gameState.turn);
+                        }
+                    }
+                } catch (error) {
+                    console.error('[TournamentView] Error al regenerar UI:', error);
                 }
-                if (gameState.opponent.soul) {
-                    uiManager.updateSoul('opponent', gameState.opponent.soul);
-                }
-                
-                // Actualizar jugador activo
-                if (gameState.currentPlayer) {
-                    uiManager.updateActivePlayer(gameState.currentPlayer);
-                }
-                
-                // Actualizar estadísticas completas (HP, G, cartas, artefactos)
-                const playerStats = getPlayersStats();
-                uiManager.updatePlayerStats(
-                    gameState.player.name,
-                    playerStats.playerHp,
-                    playerStats.playerMaxHp,
-                    playerStats.playerGold,
-                    playerStats.playerHand,
-                    playerStats.playerDeck,
-                    playerStats.playerGraveyard,
-                    playerStats.playerArtifacts
-                );
-                
-                uiManager.updateOpponentStats(
-                    gameState.opponent.name,
-                    playerStats.opponentHp,
-                    playerStats.opponentMaxHp,
-                    playerStats.opponentGold,
-                    playerStats.opponentHand,
-                    playerStats.opponentDeck,
-                    playerStats.opponentGraveyard,
-                    playerStats.opponentArtifacts
-                );
-                
-                // Actualizar tablero
-                const boardState = gameState.getBoardState();
-                uiManager.updateBoard(boardState.playerBoard, boardState.opponentBoard);
-                
-                // Actualizar turno
-                if (gameState.turn > 0) {
-                    uiManager.updateTurn(gameState.turn);
-                }
-            }
+            }, 100);
         }
         
-        // Refrescar la lista de plantillas para actualizar el botón "Activa"
-        refreshTemplateSettings();
     } else {
         console.error('[TournamentView] Error al activar plantilla');
         alert('❌ Error al activar plantilla');
     }
+    
+    // Refrescar la lista de plantillas DESPUÉS para actualizar los iconos (también asíncrono)
+    setTimeout(() => {
+        console.log('[TournamentView] Refrescando settings de plantillas...');
+        refreshTemplateSettings();
+    }, 200);
 }
 
 // Storage para los settings de plantillas
 const templateSettings = {};
 
-// Función para crear/actualizar los settings de plantillas
+// Función para actualizar visualmente los settings de plantillas (sin recrearlos)
 function refreshTemplateSettings() {
-    const templates = templateManager.templates; // Usar directamente el array de templates
     const activeTemplateId = templateManager.getActiveTemplateId();
-    const predefinedTemplateIds = ['default', 'minimal', 'esports'];
     
-    // Limpiar settings anteriores
-    Object.keys(templateSettings).forEach(key => {
-        const templateId = key.replace('template_', '');
-        if (!templates.find(t => t.metadata.id === templateId)) {
-            // La plantilla ya no existe, remover el setting
-            const settingKey = 'TournamentView.' + key;
-            $('#underscript\\.plugin\\.' + settingKey.replace(/\./g, '\\.')).parent().remove();
-            delete templateSettings[key];
-        }
-    });
+    console.log('[TournamentView] Actualizando UI de settings - Plantilla activa:', activeTemplateId);
     
-    // Crear/actualizar settings para cada plantilla
-    templates.forEach(template => {
+    // Actualizar cada setting existente
+    templateManager.templates.forEach(template => {
         const templateId = template.metadata.id;
         const settingKey = 'template_' + templateId;
         const isActive = templateId === activeTemplateId;
-        const canDelete = !predefinedTemplateIds.includes(templateId);
         
-        if (templateSettings[settingKey]) {
-            // Actualizar el setting existente
-            templateSettings[settingKey].set({ active: isActive, canDelete: canDelete });
-        } else {
-            // Crear nuevo setting
-            templateSettings[settingKey] = plugin.settings().add({
-                key: settingKey,
-                name: template.metadata.name,
-                description: template.metadata.description || `v${template.metadata.version} por ${template.metadata.author}`,
-                type: 'TournamentView:templateElement',
-                category: 'Plantillas',
-                export: false,
-                default: { active: isActive, canDelete: canDelete },
-                onChange: (action, oldValue) => {
-                    console.log('[TournamentView] onChange llamado con action:', action);
-                    if (!action) return;
-                    
-                    // Resetear el valor inmediatamente como en uc_replays.js
-                    templateSettings[settingKey].set(undefined);
-                    
-                    if (action === 'activate') {
-                        activateTemplate(templateId);
-                        
-                    } else if (action === 'export') {
-                        console.log('[TournamentView] Exportando plantilla:', templateId);
-                        
-                        const result = templateManager.exportTemplate(templateId);
-                        if (result.success) {
-                            const blob = new Blob([result.data], { type: 'application/json' });
-                            const url = URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = `template_${templateId}_${Date.now()}.json`;
-                            document.body.appendChild(a);
-                            a.click();
-                            document.body.removeChild(a);
-                            URL.revokeObjectURL(url);
-                            
-                            console.log('[TournamentView] Plantilla exportada exitosamente');
-                            alert(`✅ Plantilla "${template.metadata.name}" exportada exitosamente`);
-                        } else {
-                            console.error('[TournamentView] Error al exportar plantilla:', result.error);
-                            alert(`❌ Error al exportar: ${result.error}`);
-                        }
-                        
-                    } else if (action === 'delete') {
-                        if (!canDelete) {
-                            alert('❌ No se pueden eliminar las plantillas predefinidas');
-                            return;
-                        }
-                        
-                        if (confirm(`¿Seguro que deseas eliminar la plantilla "${template.metadata.name}"?`)) {
-                            console.log('[TournamentView] Eliminando plantilla:', templateId);
-                            
-                            // Si es la plantilla activa, cambiar a default
-                            if (isActive) {
-                                activateTemplate('default');
-                            }
-                            
-                            // Eliminar la plantilla
-                            templateManager.deleteTemplate(templateId);
-                            
-                            // Remover el setting del DOM
-                            const settingDomKey = 'underscript\\.plugin\\.TournamentView\\.' + settingKey;
-                            $('#' + settingDomKey).parent().remove();
-                            delete templateSettings[settingKey];
-                            
-                            alert(`✅ Plantilla "${template.metadata.name}" eliminada`);
-                        }
-                    }
+        if (!templateSettings[settingKey]) return;
+        
+        const settingDomKey = 'underscript\\.plugin\\.TournamentView\\.' + settingKey;
+        
+        // Actualizar el label (nombre del setting)
+        const labelElement = $(`label[for="${settingDomKey}"]`);
+        if (labelElement.length > 0) {
+            const displayName = isActive ? `⭐ ${template.metadata.name}` : template.metadata.name;
+            labelElement.contents().filter(function() {
+                return this.nodeType === 3; // Text nodes
+            }).first().replaceWith(displayName);
+        }
+        
+        // Actualizar los iconos (el elemento visual)
+        const iconContainer = $(`#${settingDomKey}`);
+        if (iconContainer.length > 0) {
+            // Buscar el icono de estrella y actualizarlo
+            const starIcon = iconContainer.find('.glyphicon-star, .glyphicon-star-empty').first();
+            if (starIcon.length > 0) {
+                if (isActive) {
+                    starIcon.removeClass('glyphicon-star-empty').addClass('glyphicon-star');
+                    starIcon.css('color', '#5cb85c');
+                    starIcon.attr('title', 'Plantilla activa');
+                } else {
+                    starIcon.removeClass('glyphicon-star').addClass('glyphicon-star-empty');
+                    starIcon.css('color', '#999');
+                    starIcon.attr('title', 'Activar plantilla');
                 }
-            });
+            }
         }
     });
 }
@@ -3706,8 +3749,148 @@ plugin.settings().add({
     export: false,
 });
 
-// Inicializar la lista de plantillas
-refreshTemplateSettings();
+// Cargar y activar la plantilla guardada (o default si no hay ninguna)
+const savedTemplateId = templateManager.getActiveTemplateId();
+if (savedTemplateId && templateManager.templates.find(t => t.metadata.id === savedTemplateId)) {
+    console.log('[TournamentView] Cargando plantilla guardada:', savedTemplateId);
+    templateManager.setActiveTemplate(savedTemplateId);
+} else {
+    console.log('[TournamentView] No hay plantilla guardada, usando default');
+    templateManager.setActiveTemplate('default');
+}
+
+// Crear settings iniciales para cada plantilla
+function createTemplateSettings() {
+    const templates = templateManager.templates;
+    const activeTemplateId = templateManager.getActiveTemplateId();
+    
+    console.log('[TournamentView] 🔍 === CREANDO SETTINGS PARA PLANTILLAS ===');
+    console.log('[TournamentView] 🔍 Total de plantillas:', templates.length);
+    
+    templates.forEach(template => {
+        const templateId = template.metadata.id;
+        const settingKey = 'template_' + templateId;
+        const isActive = templateId === activeTemplateId;
+        // Usar la propiedad isPredefined del metadata para determinar si se puede eliminar
+        const canDelete = !template.metadata.isPredefined;
+        
+        console.log('[TournamentView] 🔍 Plantilla:', {
+            id: templateId,
+            name: template.metadata.name,
+            isPredefined: template.metadata.isPredefined,
+            canDelete: canDelete,
+            isActive: isActive
+        });
+        
+        // Nombre con indicador visual si está activa
+        const displayName = isActive ? `⭐ ${template.metadata.name}` : template.metadata.name;
+        
+        // Crear setting con templateId en default para que TemplateElement pueda acceder a él
+        templateSettings[settingKey] = plugin.settings().add({
+            key: settingKey,
+            name: displayName,
+            description: template.metadata.description || `v${template.metadata.version} por ${template.metadata.author}`,
+            type: 'TournamentView:templateElement',
+            category: 'Plantillas',
+            export: false,
+            default: { active: isActive, canDelete: canDelete, templateId: templateId },
+            onChange: (newValue, oldValue) => {
+                console.log('[TournamentView] onChange - ADVERTENCIA: No debería llamarse', newValue, oldValue);
+            }
+        });
+        
+        // Guardar datos de plantilla en el Map global para recuperación robusta
+        const fullKey = `underscript.plugin.TournamentView.${settingKey}`;
+        templateDataBySettingKey.set(fullKey, {
+            templateId: templateId,
+            canDelete: canDelete,
+            isActive: isActive
+        });
+        console.log('[TemplateElement] 🗺️ Guardado en Map:', { fullKey, templateId, canDelete });
+    });
+    
+    // Usar delegación de eventos global para manejar clicks en los iconos de acción
+    $(document).off('click', '.template-action-icon'); // Remover listeners anteriores
+    $(document).on('click', '.template-action-icon', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const $icon = $(this);
+        const templateId = $icon.data('template-id');
+        const action = $icon.data('action');
+        
+        console.log('[TournamentView] Template action:', action, 'for template:', templateId);
+        
+        if (!templateId) {
+            console.error('[TournamentView] No se encontró templateId en el icono');
+            return;
+        }
+        
+        const template = templateManager.templates.find(t => t.metadata.id === templateId);
+        if (!template) {
+            console.error('[TournamentView] No se encontró la plantilla:', templateId);
+            return;
+        }
+        
+        if (action === 'activate') {
+            activateTemplate(templateId);
+            
+        } else if (action === 'export') {
+            console.log('[TournamentView] Exportando plantilla:', templateId);
+            
+            const result = templateManager.exportTemplate(templateId);
+                if (result.success) {
+                    const blob = new Blob([result.data], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `template_${templateId}_${Date.now()}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    console.log('[TournamentView] Plantilla exportada exitosamente');
+                    alert(`✅ Plantilla "${template.metadata.name}" exportada exitosamente`);
+                } else {
+                    console.error('[TournamentView] Error al exportar plantilla:', result.error);
+                    alert(`❌ Error al exportar: ${result.error}`);
+                }
+            
+        } else if (action === 'delete') {
+            const canDelete = !template.metadata.isPredefined;
+            
+            if (!canDelete) {
+                alert('❌ No se pueden eliminar las plantillas predefinidas');
+                return;
+            }
+            
+            if (confirm(`¿Seguro que deseas eliminar la plantilla "${template.metadata.name}"?`)) {
+                console.log('[TournamentView] Eliminando plantilla:', templateId);
+                
+                // Si es la plantilla activa, cambiar a default
+                const activeTemplateId = templateManager.getActiveTemplateId();
+                if (templateId === activeTemplateId) {
+                    activateTemplate('default');
+                }
+                
+                // Eliminar la plantilla
+                templateManager.deleteTemplate(templateId);
+                
+                // Remover el setting del DOM
+                const settingKey = 'template_' + templateId;
+                const settingDomKey = 'underscript\\.plugin\\.TournamentView\\.' + settingKey;
+                $(`#${settingDomKey}`).parent().remove();
+                delete templateSettings[settingKey];
+                
+                alert(`✅ Plantilla "${template.metadata.name}" eliminada`);
+            }
+        }
+    });
+}
+
+// Crear los settings iniciales
+createTemplateSettings();
 
 console.log('[TournamentView] Setting creado - isEnabled:', isEnabled);
 console.log('[TournamentView] Setting creado - isEnabled.value():', isEnabled.value());

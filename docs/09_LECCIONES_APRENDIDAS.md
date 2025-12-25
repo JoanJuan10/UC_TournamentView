@@ -1,8 +1,18 @@
 # 09 - Lecciones Aprendidas
 
-> Documento de reflexión sobre el desarrollo del plugin UC_TournamentView
+> Documento de reflexión sobre el desarrollo del plugin UC_TournamentView  
+> **Última actualización:** 24 de diciembre de 2025 - Post-Fase 4
 
 ---
+
+## 📋 Índice por Fase
+
+- [Fase 1-3: Fundamentos y UI](#fase-1-3-fundamentos-y-ui)
+- [Fase 4: Sistema de Plantillas](#fase-4-sistema-de-plantillas)
+
+---
+
+## Fase 1-3: Fundamentos y UI
 
 ## 🎓 Lecciones Técnicas
 
@@ -798,6 +808,515 @@ function getArtifactsFromDOM(playerIndex) {
 - Patrones regex implementados: 10+
 - Bugs corregidos: 10
 - Tamaño del build: +18 KiB (39 → 57 KiB)
+
+---
+
+## Fase 4: Sistema de Plantillas
+
+### 🎨 Lecciones sobre UnderScript Custom Settings
+
+#### 1. Limitación Crítica: No se Pueden Recrear Settings
+
+**Problema**: Intentar eliminar y recrear un setting con la misma `key` causa error fatal.
+
+```javascript
+// ❌ NUNCA HACER ESTO
+function refreshSettings() {
+    existingSetting.remove();  // Parece remover, pero...
+    
+    plugin.settings().add({
+        key: 'same_key',  // ❌ Error: already registered
+        // ...
+    });
+}
+```
+
+**Causa**: UnderScript mantiene un registro interno de keys. `remove()` quita el setting del UI pero no del registro.
+
+**Solución**: Separar creación única de actualización continua:
+
+```javascript
+// Crear UNA VEZ al inicio
+function createSettings() {
+    const setting = plugin.settings().add({
+        key: 'template_default',
+        // ...
+    });
+}
+
+// Actualizar MÚLTIPLES VECES
+function refreshSettings() {
+    // Manipular DOM directamente, NO llamar a .add()
+    const label = $('label[for="template_default"]');
+    label.text('⭐ Default');
+}
+```
+
+**Lección**: Con frameworks restrictivos, a veces la manipulación DOM directa es la única opción viable.
+
+---
+
+#### 2. Custom Setting Types con Patrón uc_replays.js
+
+**Descubrimiento**: uc_replays.js usa `FakeSetting` para settings personalizados con iconos.
+
+**Implementación**:
+
+```javascript
+class FakeSetting {
+    constructor(setting) {
+        const SETTING = Symbol('setting');
+        this[SETTING] = setting;
+        
+        return new Proxy(this, {
+            get: (target, prop) => {
+                if (prop in target) return target[prop];
+                return setting[prop];
+            }
+        });
+    }
+}
+
+class TemplateElement extends FakeSetting {
+    element(value, update, { remove = false }) {
+        // Retornar elemento jQuery con iconos
+        const container = $('<span></span>');
+        container.append(starIcon);
+        container.append(exportIcon);
+        return container;
+    }
+    
+    labelFirst() {
+        return true;  // Label primero, luego iconos
+    }
+}
+
+// Registrar tipo
+plugin.settings().addType(new TemplateElement());
+
+// Usar tipo
+plugin.settings().add({
+    type: 'TournamentView:templateElement',
+    // ...
+});
+```
+
+**Lección**: Para UI compleja en settings, crear custom types basados en `FakeSetting` del patrón uc_replays.js.
+
+---
+
+#### 3. FileReader para Importación de JSON
+
+**Objetivo**: Permitir al usuario seleccionar un archivo `.json` desde un input de file.
+
+**Implementación**:
+
+```javascript
+class FileInputElement extends FakeSetting {
+    element(value, update) {
+        const input = $('<input type="file" accept=".json">');
+        
+        input.on('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            
+            reader.onload = (event) => {
+                try {
+                    const json = JSON.parse(event.target.result);
+                    update(json);  // Llamar al onChange con el JSON
+                } catch (error) {
+                    alert('Error: JSON inválido');
+                }
+            };
+            
+            reader.readAsText(file);
+        });
+        
+        return input;
+    }
+}
+```
+
+**Pasos clave**:
+1. Crear `<input type="file">`
+2. Escuchar evento `change`
+3. Obtener archivo con `e.target.files[0]`
+4. Crear `FileReader()`
+5. Leer con `readAsText()`
+6. Parsear JSON en `onload`
+7. Llamar a `update()` con datos parseados
+
+**Lección**: `FileReader` es la forma estándar de leer archivos del sistema en el navegador. Siempre validar JSON con try/catch.
+
+---
+
+#### 4. Validación de Estructura de Plantillas
+
+**Requerimiento**: Validar que las plantillas importadas tengan estructura correcta.
+
+**Implementación**:
+
+```javascript
+function validateTemplate(data) {
+    // 1. Validar que sea objeto
+    if (typeof data !== 'object' || data === null) {
+        return { valid: false, error: 'Debe ser un objeto JSON válido' };
+    }
+    
+    // 2. Validar campos obligatorios
+    const requiredFields = ['metadata', 'variables', 'customCSS'];
+    for (const field of requiredFields) {
+        if (!data[field]) {
+            return { valid: false, error: `Falta campo obligatorio: ${field}` };
+        }
+    }
+    
+    // 3. Validar metadata
+    const requiredMeta = ['id', 'name', 'version'];
+    for (const field of requiredMeta) {
+        if (!data.metadata[field]) {
+            return { valid: false, error: `metadata.${field} es obligatorio` };
+        }
+    }
+    
+    // 4. Validar variables (colores)
+    const requiredVars = ['primaryColor', 'secondaryColor', 'accentColor'];
+    for (const varName of requiredVars) {
+        if (!data.variables[varName]) {
+            return { valid: false, error: `variables.${varName} es obligatorio` };
+        }
+    }
+    
+    // 5. Validar que customCSS sea string
+    if (typeof data.customCSS !== 'string') {
+        return { valid: false, error: 'customCSS debe ser un string' };
+    }
+    
+    return { valid: true };
+}
+```
+
+**Uso**:
+```javascript
+const validation = validateTemplate(importedData);
+if (!validation.valid) {
+    alert(`Plantilla inválida: ${validation.error}`);
+    return;
+}
+```
+
+**Lección**: Para datos externos (archivos de usuario), validación exhaustiva es crucial. Retornar objeto con `{valid, error}` es más útil que throw exception.
+
+---
+
+### 🔄 Lecciones sobre Persistencia
+
+#### 5. localStorage Bidireccional
+
+**Patrón implementado**: Guardar al cambiar, leer al iniciar.
+
+```javascript
+// GUARDAR: Al activar plantilla
+setActiveTemplate(templateId) {
+    this.activeTemplate = template;
+    
+    try {
+        localStorage.setItem('uc_tournament_active_template', templateId);
+    } catch (e) {
+        console.error('Error guardando en localStorage:', e);
+    }
+}
+
+// LEER: Al obtener plantilla activa
+getActiveTemplateId() {
+    try {
+        const saved = localStorage.getItem('uc_tournament_active_template');
+        if (saved) return saved;
+    } catch (e) {
+        console.error('Error leyendo de localStorage:', e);
+    }
+    
+    // Fallback
+    return this.activeTemplate?.metadata.id || 'default';
+}
+
+// INICIALIZAR: NO establecer default en constructor
+constructor() {
+    this.loadPredefinedTemplates();
+    this.loadCustomTemplates();
+    // ❌ NO: this.setActiveTemplate('default');
+}
+
+// CARGAR: Después de crear TemplateManager
+const savedId = templateManager.getActiveTemplateId();
+templateManager.setActiveTemplate(savedId || 'default');
+```
+
+**Orden correcto**:
+1. Constructor NO establece plantilla por defecto
+2. Después de constructor, leer localStorage
+3. Activar plantilla guardada (o default si no existe)
+
+**Lección**: Para persistencia correcta, el constructor no debe establecer valores por defecto que sobrescriban localStorage. Leer storage DESPUÉS de inicialización.
+
+---
+
+### 🐛 Lecciones de Debugging Avanzado
+
+#### 6. Direct DOM Manipulation para Actualizaciones Visuales
+
+**Problema**: UnderScript no refresca UI cuando cambias valores internos.
+
+**Solución**: Manipular el DOM directamente con jQuery.
+
+```javascript
+function refreshVisualIndicators() {
+    const activeId = getActiveTemplateId();
+    
+    templates.forEach(template => {
+        const settingKey = 'template_' + template.id;
+        
+        // 1. Encontrar label por atributo 'for'
+        const label = $(`label[for="${settingKey}"]`);
+        
+        // 2. Actualizar solo nodos de texto (no elementos HTML)
+        const textNode = label.contents().filter(function() {
+            return this.nodeType === 3;  // TEXT_NODE
+        }).first();
+        
+        const newText = template.id === activeId 
+            ? `⭐ ${template.name}`
+            : template.name;
+        
+        textNode.replaceWith(newText);
+        
+        // 3. Encontrar y actualizar icono
+        const iconContainer = label.next('span');
+        const starIcon = iconContainer.find('.glyphicon-star, .glyphicon-star-empty');
+        
+        if (template.id === activeId) {
+            starIcon.removeClass('glyphicon-star-empty')
+                    .addClass('glyphicon-star')
+                    .css('color', '#5cb85c');
+        } else {
+            starIcon.removeClass('glyphicon-star')
+                    .addClass('glyphicon-star-empty')
+                    .css('color', '#999');
+        }
+    });
+}
+```
+
+**Técnicas clave**:
+- `$('label[for="..."]')` - Selector por atributo
+- `.contents()` - Obtener todos los nodos (incluye text nodes)
+- `.filter(function() { return this.nodeType === 3 })` - Filtrar solo text nodes
+- `.replaceWith()` - Reemplazar nodo completo
+- `.find('.clase1, .clase2')` - Buscar elementos con cualquiera de las clases
+- `.removeClass().addClass()` - Chainable class manipulation
+- `.css('property', 'value')` - Establecer estilos inline
+
+**Lección**: Cuando la API del framework no permite actualizaciones, manipular el DOM directamente es legítimo. jQuery hace esto más fácil y cross-browser.
+
+---
+
+#### 7. Async Context y Timing Issues
+
+**Problema**: Después de `uiManager.initialize()`, métodos como `updatePlayerStats()` no están disponibles.
+
+**Causa**: Inicialización asíncrona + contexto de `setTimeout`.
+
+**Solución**: Defensive programming con type checks.
+
+```javascript
+setTimeout(() => {
+    uiManager.destroy();
+    uiManager.initialize();
+    
+    // ✅ Verificar existencia antes de llamar
+    if (gameState.player && typeof uiManager.updatePlayerStats === 'function') {
+        uiManager.updatePlayerStats(/* ... */);
+    }
+    
+    if (gameState.opponent && typeof uiManager.updateOpponentStats === 'function') {
+        uiManager.updateOpponentStats(/* ... */);
+    }
+    
+    if (typeof uiManager.updateBoard === 'function') {
+        uiManager.updateBoard(/* ... */);
+    }
+}, 100);
+```
+
+**Alternativa**: Acceso directo a propiedades en lugar de métodos.
+
+```javascript
+// En vez de:
+const stats = gameState.getPlayersStats();  // Método puede no existir
+
+// Usar:
+if (gameState.player) {
+    const hp = gameState.player.hp;  // Propiedad siempre existe
+}
+```
+
+**Lección**: En contextos asíncronos, siempre validar que funciones existan antes de llamarlas. Acceso directo a propiedades es más confiable que métodos en closures.
+
+---
+
+### 📦 Lecciones de Arquitectura de Plantillas
+
+#### 8. Sistema de Variables CSS con camelCase → kebab-case
+
+**Objetivo**: Permitir definir colores en JSON como `primaryColor` y usarlos en CSS como `--tv-primary-color`.
+
+**Implementación**:
+
+```javascript
+function generateCSSVariables(variables) {
+    let css = ':root {\n';
+    
+    Object.entries(variables).forEach(([key, value]) => {
+        // Convertir camelCase a kebab-case
+        const cssVarName = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+        css += `  --tv-${cssVarName}: ${value};\n`;
+    });
+    
+    css += '}\n';
+    return css;
+}
+
+// Input:
+const vars = {
+    primaryColor: '#667eea',
+    secondaryColor: '#764ba2',
+    accentColor: '#f093fb'
+};
+
+// Output:
+:root {
+  --tv-primary-color: #667eea;
+  --tv-secondary-color: #764ba2;
+  --tv-accent-color: #f093fb;
+}
+```
+
+**Regex breakdown**:
+- `/([A-Z])/g` - Encuentra todas las mayúsculas
+- `-$1` - Reemplaza con guion + la mayúscula capturada
+- `.toLowerCase()` - Convierte todo a minúsculas
+
+**Resultado**:
+- `primaryColor` → `primary-color` → `--tv-primary-color`
+- `backgroundColor` → `background-color` → `--tv-background-color`
+
+**Lección**: Para convertir naming conventions, regex con capture groups es más robusto que split/join o replace manual.
+
+---
+
+#### 9. Template Export con Blob y Download Link
+
+**Objetivo**: Permitir descargar una plantilla como archivo JSON.
+
+**Implementación**:
+
+```javascript
+function exportTemplate(templateId) {
+    const template = getTemplateById(templateId);
+    
+    // 1. Crear JSON string con indentación
+    const json = JSON.stringify(template, null, 2);
+    
+    // 2. Crear Blob con tipo MIME correcto
+    const blob = new Blob([json], { type: 'application/json' });
+    
+    // 3. Crear URL temporal del blob
+    const url = URL.createObjectURL(blob);
+    
+    // 4. Crear link de descarga invisible
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${template.metadata.id}.json`;
+    
+    // 5. Simular click para descargar
+    document.body.appendChild(link);
+    link.click();
+    
+    // 6. Limpiar
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    console.log(`Plantilla ${template.metadata.name} exportada`);
+}
+```
+
+**Pasos clave**:
+1. `JSON.stringify(obj, null, 2)` - 2 espacios de indentación
+2. `new Blob([string], {type})` - Crear blob con contenido
+3. `URL.createObjectURL(blob)` - Generar URL temporal
+4. Crear `<a>` con `href` al blob y `download` attribute
+5. `link.click()` - Trigger download programmatically
+6. `URL.revokeObjectURL()` - Liberar memoria
+
+**Lección**: Para descargas generadas dinámicamente, Blob + createObjectURL + click programático es el patrón estándar. Siempre limpiar con revokeObjectURL.
+
+---
+
+### 🧪 Lecciones de Testing en Producción
+
+#### 10. Logs Estructurados para Debugging de Usuarios
+
+**Patrón**: Logs detallados con prefijo identificable y estructura clara.
+
+```javascript
+// Nivel 1: Acción principal
+console.log('[TournamentView] Activando plantilla:', templateId);
+
+// Nivel 2: Resultado
+console.log('[TournamentView] Plantilla guardada en localStorage:', templateId);
+
+// Nivel 3: Estado final
+console.log('[TournamentView] Plantilla activa:', template.metadata.name);
+
+// Errores con contexto
+console.error('[TournamentView] Error al regenerar UI:', error);
+
+// Debug detallado (solo durante desarrollo)
+console.log('[TournamentView] Refrescando settings de plantillas...');
+console.log('[TournamentView] Actualizando UI de settings - Plantilla activa:', activeId);
+```
+
+**Beneficios**:
+- Usuario puede copiar logs y enviártelos
+- Filtrable con `/TournamentView/` en DevTools
+- Trazabilidad completa de flujo de ejecución
+- Detectar problemas sin acceso directo al navegador del usuario
+
+**Lección**: En plugins distribuidos, logs estructurados son tu única forma de debugging remoto. Incluir contexto suficiente para reproducir issues.
+
+---
+
+### 📊 Métricas de Fase 4
+
+**Tiempo de desarrollo**: ~8 horas
+- Diseño de arquitectura: 2 horas
+- Implementación base: 3 horas
+- Debugging (18 bugs): 3 horas
+
+**Líneas de código añadidas**: ~650
+- TemplateManager: ~300 líneas (18 métodos)
+- Custom Setting Types: ~150 líneas (2 clases)
+- Validación y helpers: ~100 líneas
+- Integración y tests: ~100 líneas
+
+**Bugs resueltos**: 18 (Bug #11 a Bug #18)
+Ver [16_FASE4_BUGS_RESUELTOS.md](16_FASE4_BUGS_RESUELTOS.md)
+
+**Build size**: +2 KiB (88.6 → 90.3 KiB)
+
+**Conformidad**: 98% ✅ (ver [12_CANON_CHECK.md](12_CANON_CHECK.md))
 
 ---
 

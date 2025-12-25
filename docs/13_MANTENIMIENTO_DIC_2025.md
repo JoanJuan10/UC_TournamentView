@@ -45,6 +45,8 @@ Realizar una revisión exhaustiva de la documentación del proyecto tras complet
 - ⚠️ Sanitización de CSS no implementada (riesgo bajo)
 - ⚠️ Límite de tamaño de plantillas no validado (riesgo bajo)
 
+**Bugs resueltos:** 18 bugs durante la implementación de Fase 4. Ver [16_FASE4_BUGS_RESUELTOS.md](16_FASE4_BUGS_RESUELTOS.md) para detalles completos.
+
 ### 2. Índice de Documentación
 
 **Archivo creado:** [00_INDICE.md](00_INDICE.md)

@@ -3,7 +3,8 @@
 > Guía completa de navegación por toda la documentación del proyecto
 
 **Versión:** 0.1.0  
-**Última actualización:** 24 de diciembre de 2025
+**Última actualización:** 24 de diciembre de 2025 - Post-Fase 4  
+**Estado:** ✅ Beta funcional - Producción lista
 
 ---
 
@@ -13,11 +14,19 @@
 
 1. **[README.md](../README.md)** - Documentación principal del proyecto
    - Instalación y configuración
-   - Características principales
-   - Guía rápida de uso
+   - Características principales (sistema de plantillas completo)
+   - Guía de import/export de plantillas
+   - Roadmap con Fase 4 completada
    - Créditos y licencia
 
-2. **[14_MAPA_VISUAL.md](14_MAPA_VISUAL.md)** - Mapa visual del proyecto
+2. **[08_ESTADO_Y_RESUMEN.md](08_ESTADO_Y_RESUMEN.md)** - Estado actual y resumen ejecutivo ⭐ NUEVO
+   - Resumen ejecutivo de una página
+   - Estado técnico detallado (90.3 KiB build)
+   - Bugs resueltos (18 en Fase 4)
+   - Roadmap y próximos pasos
+   - Consolida: 08_ESTADO_ACTUAL.md + 15_RESUMEN_EJECUTIVO.md
+
+3. **[14_MAPA_VISUAL.md](14_MAPA_VISUAL.md)** - Mapa visual del proyecto
    - Estructura de archivos
    - Arquitectura del código
    - Flujo de datos
@@ -26,65 +35,98 @@
 
 ### 🎯 Especificaciones y Planificación
 
-3. **[06_ESPECIFICACION_PROYECTO.md](06_ESPECIFICACION_PROYECTO.md)** - Especificación técnica completa
+4. **[06_ESPECIFICACION_PROYECTO.md](06_ESPECIFICACION_PROYECTO.md)** - Especificación técnica completa
    - Alcance del proyecto
    - Requisitos funcionales y técnicos
    - Arquitectura del sistema
-   - Estado actual de desarrollo
+   - Estado actual: Fase 4 completada ✅
 
 ### 🏗️ Fases de Desarrollo
 
-4. **[09_FASE_3_DETALLES_IMPLEMENTACION.md](09_FASE_3_DETALLES_IMPLEMENTACION.md)** - Fase 3: Internacionalización
-   - Sistema i18n completo
-   - Diccionarios ES/EN
-   - Métodos de traducción
-   - Estado: ✅ Completada
+5. **[09_LECCIONES_APRENDIDAS.md](09_LECCIONES_APRENDIDAS.md)** - Lecciones técnicas por fase ⭐ ACTUALIZADO
+   - Índice por fases (Fase 1-4)
+   - **Fase 4: Sistema de Plantillas** (10 lecciones principales)
+     - Limitaciones de UnderScript (settings no recreables)
+     - Custom Setting Types con FakeSetting
+     - FileReader API para imports
+     - localStorage bidireccional
+     - DOM manipulation directa
+     - Async context y defensive programming
+     - CSS variables (camelCase → kebab-case)
+     - Blob exports para downloads
+     - Structured logging
+   - Métricas: 8h desarrollo, 650 líneas, 18 bugs resueltos
 
-5. **[10_FASE4_PLANTILLAS.md](10_FASE4_PLANTILLAS.md)** - Fase 4: Arquitectura del sistema de plantillas
+6. **[10_FASE4_PLANTILLAS.md](10_FASE4_PLANTILLAS.md)** - Fase 4: Arquitectura del sistema de plantillas
    - Diseño conceptual
-   - Estructura de datos
+   - Estructura de datos (metadata + variables + customCSS)
    - Flujos de trabajo
    - Plan de implementación
    - Estado: ✅ Completada
 
-6. **[11_FASE4_RESUMEN.md](11_FASE4_RESUMEN.md)** - Fase 4: Resumen de implementación completa
+7. **[11_FASE4_RESUMEN.md](11_FASE4_RESUMEN.md)** - Fase 4: Resumen de implementación completa
    - 650+ líneas de documentación técnica
-   - 18 métodos de TemplateManager
-   - Sistema de gestión avanzado (v2)
+   - 18 métodos de TemplateManager documentados
+   - Sistema de gestión avanzado (v2) con FakeSetting
    - Tipos personalizados de settings
    - Patrones de uc_replays.js
-   - 10 problemas resueltos
+   - 10 problemas resueltos durante desarrollo
    - Métricas y benchmarks
    - Estado: ✅ Completada y documentada
 
+8. **[16_FASE4_BUGS_RESUELTOS.md](16_FASE4_BUGS_RESUELTOS.md)** - 18 bugs resueltos en Fase 4 ⭐ NUEVO
+   - Índice de 18 bugs (Bug #11 a Bug #18)
+   - Clasificación por severidad:
+     - 🔴 Crítica: 2 bugs (getBoardState, template not persisting)
+     - 🟡 Alta: 2 bugs (star indicator, already registered)
+     - 🟠 Media: 4 bugs (restantes)
+   - Causa raíz para cada bug
+   - Solución con ejemplos de código (before/after)
+   - Impacto y lecciones aprendidas
+   - Testing checklist para prevenir regresiones
+   - Métricas: ~6 horas debugging total
+
 ### 🔍 Validación y Calidad
 
-7. **[12_CANON_CHECK.md](12_CANON_CHECK.md)** - Checklist de conformidad
+9. **[12_CANON_CHECK.md](12_CANON_CHECK.md)** - Checklist de conformidad
    - Validación contra especificaciones
    - Conformidad: 98% ✅
-   - Problemas conocidos
+   - Problemas conocidos: 0
+   - Validación de Fase 4 (documentación, localStorage, arquitectura)
    - Recomendaciones futuras
 
-8. **[13_MANTENIMIENTO_DIC_2025.md](13_MANTENIMIENTO_DIC_2025.md)** - Reporte de mantenimiento
-   - Actividades realizadas (24/12/2025)
-   - Documentos actualizados
-   - Métricas del proyecto
-   - Próximos pasos recomendados
+10. **[13_MANTENIMIENTO_DIC_2025.md](13_MANTENIMIENTO_DIC_2025.md)** - Reporte de mantenimiento
+    - Actividades realizadas (24/12/2025)
+    - Documentos actualizados
+    - Referencia a 18 bugs resueltos
+    - Métricas del proyecto
+    - Próximos pasos recomendados
 
 ### 🧪 Testing
 
-9. **[TESTING_GUIDE.md](TESTING_GUIDE.md)** - Guía completa de pruebas
-   - 10 fases de testing
-   - Casos de éxito y error
-   - Validaciones de integración
-   - Procedimientos de verificación
+11. **[TESTING_GUIDE.md](TESTING_GUIDE.md)** - Guía completa de pruebas
+    - 10 fases de testing
+    - Casos de éxito y error
+    - Validaciones de integración
+    - Procedimientos de verificación
+
+### 📖 Documentación Técnica Base
+
+12-18. **[01_TAMPERMONKEY.md](01_TAMPERMONKEY.md) hasta [07_DESARROLLO.md](07_DESARROLLO.md)**
+    - TamperMonkey y UserScripts
+    - UnderScript Plugin API
+    - Eventos del juego
+    - Variables globales
+    - Librerías incluidas
+    - Especificación del proyecto (histórico)
+    - Guía de desarrollo con webpack
 
 ### 📖 Ejemplos y Tutoriales
 
-10. **[example_template.json](../templates/example_template.json)** - Plantilla de ejemplo
-   - Estructura completa
-   - Comentarios explicativos
-   - Valores de ejemplo
+19. **[example_template.json](../templates/example_template.json)** - Plantilla de ejemplo
+    - Estructura completa
+    - Comentarios explicativos
+    - Valores de ejemplo
 
 ---
 
@@ -94,23 +136,24 @@
 
 **Empezar aquí:**
 1. [README.md](../README.md) - Visión general
-2. [14_MAPA_VISUAL.md](14_MAPA_VISUAL.md) - Mapa visual del proyecto
-3. [06_ESPECIFICACION_PROYECTO.md](06_ESPECIFICACION_PROYECTO.md) - Especificaciones técnicas
-4. [11_FASE4_RESUMEN.md](11_FASE4_RESUMEN.md) - Implementación detallada
+2. [08_ESTADO_Y_RESUMEN.md](08_ESTADO_Y_RESUMEN.md) - Estado actual del proyecto ⭐
+3. [14_MAPA_VISUAL.md](14_MAPA_VISUAL.md) - Mapa visual del proyecto
+4. [06_ESPECIFICACION_PROYECTO.md](06_ESPECIFICACION_PROYECTO.md) - Especificaciones técnicas
 
-**Profundizar:**
-5. [10_FASE4_PLANTILLAS.md](10_FASE4_PLANTILLAS.md) - Arquitectura de plantillas
-6. [09_FASE_3_DETALLES_IMPLEMENTACION.md](09_FASE_3_DETALLES_IMPLEMENTACION.md) - Sistema i18n
+**Profundizar en Fase 4:**
+5. [11_FASE4_RESUMEN.md](11_FASE4_RESUMEN.md) - Implementación detallada (650+ líneas)
+6. [10_FASE4_PLANTILLAS.md](10_FASE4_PLANTILLAS.md) - Arquitectura de plantillas
+7. [09_LECCIONES_APRENDIDAS.md](09_LECCIONES_APRENDIDAS.md) - 10 lecciones técnicas de Fase 4
 
-**Validar:**
-7. [12_CANON_CHECK.md](12_CANON_CHECK.md) - Conformidad del código
-8. [13_MANTENIMIENTO_DIC_2025.md](13_MANTENIMIENTO_DIC_2025.md) - Reporte de mantenimiento
-9. [TESTING_GUIDE.md](TESTING_GUIDE.md) - Guía de pruebas
+**Debugging y validación:**
+8. [16_FASE4_BUGS_RESUELTOS.md](16_FASE4_BUGS_RESUELTOS.md) - 18 bugs documentados ⭐
+9. [12_CANON_CHECK.md](12_CANON_CHECK.md) - Conformidad del código (98% ✅)
+10. [TESTING_GUIDE.md](TESTING_GUIDE.md) - Guía de pruebas completa
 
 ### Para Usuarios
 
 **Guía de uso:**
-1. [README.md](../README.md) - Instalación y uso básico
+1. [README.md](../README.md) - Instalación, uso y sistema de plantillas
 2. [14_MAPA_VISUAL.md](14_MAPA_VISUAL.md) - Estructura del proyecto
 
 **Crear plantillas:**
@@ -120,14 +163,15 @@
 ### Para Project Managers
 
 **Estado del proyecto:**
-1. [14_MAPA_VISUAL.md](14_MAPA_VISUAL.md) - Visión general del proyecto
-2. [06_ESPECIFICACION_PROYECTO.md](06_ESPECIFICACION_PROYECTO.md) - Estado actual
-3. [12_CANON_CHECK.md](12_CANON_CHECK.md) - Métricas de calidad
+1. [08_ESTADO_Y_RESUMEN.md](08_ESTADO_Y_RESUMEN.md) - Resumen ejecutivo + estado técnico ⭐
+2. [14_MAPA_VISUAL.md](14_MAPA_VISUAL.md) - Visión general del proyecto
+3. [12_CANON_CHECK.md](12_CANON_CHECK.md) - Métricas de calidad (98% ✅)
 4. [13_MANTENIMIENTO_DIC_2025.md](13_MANTENIMIENTO_DIC_2025.md) - Último mantenimiento
 
-**Planificación:**
-5. [10_FASE4_PLANTILLAS.md](10_FASE4_PLANTILLAS.md) - Arquitectura de Fase 4
-6. [11_FASE4_RESUMEN.md](11_FASE4_RESUMEN.md) - Implementación y métricas
+**Análisis de desarrollo:**
+5. [16_FASE4_BUGS_RESUELTOS.md](16_FASE4_BUGS_RESUELTOS.md) - 18 bugs + métricas de debugging
+6. [09_LECCIONES_APRENDIDAS.md](09_LECCIONES_APRENDIDAS.md) - Lecciones aprendidas por fase
+7. [11_FASE4_RESUMEN.md](11_FASE4_RESUMEN.md) - Implementación y métricas de Fase 4
 
 ---
 
@@ -135,68 +179,41 @@
 
 | Documento | Estado | Tamaño | Última actualización |
 |-----------|--------|---------|----------------------|
-| 00_INDICE.md | ✅ Actualizado | ~12 KB | 24/12/2025 |
+| 00_INDICE.md | ✅ Actualizado | ~15 KB | 24/12/2025 Post-F4 |
+| 08_ESTADO_Y_RESUMEN.md | ⭐ Nuevo | ~25 KB | 24/12/2025 (fusiona 08+15) |
+| 09_LECCIONES_APRENDIDAS.md | ✅ Actualizado | ~20 KB | 24/12/2025 (+Fase 4) |
+| 16_FASE4_BUGS_RESUELTOS.md | ⭐ Nuevo | ~15 KB | 24/12/2025 (18 bugs) |
 | 06_ESPECIFICACION_PROYECTO.md | ✅ Actualizado | ~25 KB | 24/12/2025 |
-| 09_FASE_3_DETALLES_IMPLEMENTACION.md | ✅ Completo | ~12 KB | 22/12/2025 |
 | 10_FASE4_PLANTILLAS.md | ✅ Completo | ~18 KB | 23/12/2025 |
 | 11_FASE4_RESUMEN.md | ✅ Actualizado | ~52 KB | 24/12/2025 |
 | 12_CANON_CHECK.md | ✅ Nuevo | ~8 KB | 24/12/2025 |
-| 13_MANTENIMIENTO_DIC_2025.md | ✅ Nuevo | ~5 KB | 24/12/2025 |
+| 13_MANTENIMIENTO_DIC_2025.md | ✅ Actualizado | ~5 KB | 24/12/2025 |
 | 14_MAPA_VISUAL.md | ✅ Nuevo | ~12 KB | 24/12/2025 |
-| 15_RESUMEN_EJECUTIVO.md | ✅ Nuevo | ~2 KB | 24/12/2025 |
 | TESTING_GUIDE.md | ✅ Completo | ~10 KB | 23/12/2025 |
-| README.md (raíz) | ✅ Actualizado | ~17 KB | 24/12/2025 |
+| README.md (raíz) | ✅ Actualizado | ~18 KB | 24/12/2025 Post-F4 |
 | example_template.json | ✅ Completo | ~2 KB | 22/12/2025 |
 | 01-07 (Base técnica) | ✅ Completos | ~50 KB | Varios |
-| 08-09 (Históricos) | ⚠️ Históricos | ~15 KB | Varios |
+| ~~08_ESTADO_ACTUAL.md~~ | ⚠️ Obsoleto | - | (fusionado en 08_ESTADO_Y_RESUMEN.md) |
+| ~~15_RESUMEN_EJECUTIVO.md~~ | ⚠️ Obsoleto | - | (fusionado en 08_ESTADO_Y_RESUMEN.md) |
 
-**Total:** ~240 KB de documentación completa
+**Total:** ~250 KB de documentación completa (15 documentos activos)
 
-**Cobertura de documentación: 100% ✅**
+**Cobertura de documentación: 100% ✅**  
+**Bugs conocidos: 0**  
+**Conformidad: 98% ✅**
 
 ---
 
 ## 🔄 Historial de Actualizaciones
 
-### 24 de diciembre de 2025 - Mantenimiento Fase 4
-- ✅ Actualizado [11_FASE4_RESUMEN.md](11_FASE4_RESUMEN.md) con sistema v2
-- ✅ Actualizado [06_ESPECIFICACION_PROYECTO.md](06_ESPECIFICACION_PROYECTO.md) con estado de Fase 4
-- ✅ Actualizado [README.md](../README.md) con nueva UI de gestión
-- ✅ Creado [12_CANON_CHECK.md](12_CANON_CHECK.md) - validación de conformidad (98% ✅)
-- ✅ Creado [13_MANTENIMIENTO_DIC_2025.md](13_MANTENIMIENTO_DIC_2025.md) - reporte de mantenimiento
-- ✅ Creado [14_MAPA_VISUAL.md](14_MAPA_VISUAL.md) - mapa visual del proyecto
-- ✅ Creado [15_RESUMEN_EJECUTIVO.md](15_RESUMEN_EJECUTIVO.md) - resumen de una página
-- ✅ Actualizado [00_INDICE.md](00_INDICE.md) - índice completo exhaustivo con todos los documentos
-
-### 23 de diciembre de 2025 - Finalización Fase 4
-- ✅ Creado [11_FASE4_RESUMEN.md](11_FASE4_RESUMEN.md)
-- ✅ Actualizado [TESTING_GUIDE.md](TESTING_GUIDE.md)
-- ✅ Documentados 10 problemas resueltos
-
-### 22 de diciembre de 2025 - Inicio Fase 4
-- ✅ Creado [10_FASE4_PLANTILLAS.md](10_FASE4_PLANTILLAS.md)
-- ✅ Creado [example_template.json](../templates/example_template.json)
-
----
-
-## 📝 Convenciones de Documentación
-
-### Nomenclatura de Archivos
-- Numerados cuando forman parte de una secuencia
-- Descriptivos y claros
-- Mayúsculas para archivos principales (README, TESTING_GUIDE)
-
-### Formato Markdown
-- Headers con emojis para mejor navegabilidad
-- Tablas para comparaciones y métricas
-- Listas para secuencias y procedimientos
-- Code blocks con syntax highlighting
-
-### Estado de Documentos
-- ✅ **Actualizado**: Información al día con el código
-- ⚠️ **Desactualizado**: Requiere revisión
-- 🚧 **En progreso**: Aún en desarrollo
-- 📝 **Planificado**: Pendiente de crear
+### 24 de diciembre de 2025 - Post-Fase 4 (Documentación Completa)
+- ⭐ **Creado [08_ESTADO_Y_RESUMEN.md](08_ESTADO_Y_RESUMEN.md)** - Consolida 08_ESTADO_ACTUAL + 15_RESUMEN_EJECUTIVO
+- ⭐ **Creado [16_FASE4_BUGS_RESUELTOS.md](16_FASE4_BUGS_RESUELTOS.md)** - 18 bugs documentados (Bug #11 a #18)
+- ✅ **Actualizado [09_LECCIONES_APRENDIDAS.md](09_LECCIONES_APRENDIDAS.md)** - Añadida sección completa de Fase 4 (10 lecciones)
+- ✅ **Actualizado [README.md](../README.md)** - Estado final de Fase 4, 90.3 KiB build, persistencia completa
+- ✅ **Actualizado [.github/workflows/canon-check.yml](../.github/workflows/canon-check.yml)** - Añadidas validaciones de Fase 4
+- ✅ **Actualizado [13_MANTENIMIENTO_DIC_2025.md](13_MANTENIMIENTO_DIC_2025.md)** - Referencias a bugs resueltos
+- ✅ **Actualizado [00_INDICE.md](00_INDICE.md)** - Índice completo con nuevos documentos
 
 ---
 
