@@ -139,3 +139,5 @@ Mira [CONTRIBUTING.md](../CONTRIBUTING.md) para la guía completa.
 **Hecho con ❤️ por [JoanJuan10](https://github.com/JoanJuan10)**
 
 *¡Solo un fan que quería hacer más divertido ver partidas!*
+
+<sub>🤖 Este proyecto fue desarrollado con la asistencia de [GitHub Copilot](https://github.com/features/copilot) como compañero de programación IA durante todo el proceso.</sub>

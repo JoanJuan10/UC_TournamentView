@@ -1,230 +1,206 @@
-# 🤝 Guía de Contribución - UC_TournamentView
+# 🤝 Contributing Guide - UC_TournamentView
 
-¡Hola! Gracias por querer echar una mano con UC_TournamentView. Este doc te explica cómo puedes colaborar.
+Hey! Thanks for wanting to help out with UC_TournamentView. This doc explains how you can contribute.
 
-## 📋 Índice
+## 📋 Table of Contents
 
-- [Antes de nada](#antes-de-nada)
-- [¿Cómo puedo ayudar?](#cómo-puedo-ayudar)
-- [Preparar el entorno](#preparar-el-entorno)
-- [Cómo desarrollar](#cómo-desarrollar)
-- [Estilo de código](#estilo-de-código)
-- [Commits y PRs](#commits-y-prs)
-
----
-
-## Antes de nada
-
-Solo pedimos que seas respetuoso con el resto de la comunidad. Estamos aquí porque nos gusta el juego y queremos hacer cosas molonas. Nada más.
+- [Before anything](#before-anything)
+- [How can I help?](#how-can-i-help)
+- [Setting up](#setting-up)
+- [How to develop](#how-to-develop)
+- [Code style](#code-style)
+- [Commits and PRs](#commits-and-prs)
 
 ---
 
-## ¿Cómo puedo ayudar?
+## Before anything
 
-### Reportar bugs 🐛
-
-Si algo no funciona:
-
-1. Busca primero en [Issues](https://github.com/JoanJuan10/UC_TournamentView/issues) por si alguien ya lo reportó
-2. Si no existe, crea uno nuevo con la plantilla de Bug Report
-3. Cuanta más info des, mejor (pasos para reproducirlo, capturas, logs de consola...)
-
-### Sugerir ideas ✨
-
-¿Se te ocurre algo que mejoraría el plugin?
-
-1. Mira en Issues si alguien ya lo sugirió
-2. Si no, crea uno con la plantilla de Feature Request
-3. Explica qué problema resolvería y por qué mola
-
-### Escribir código 💻
-
-Puedes ayudar con:
-- **Bug fixes** - Arreglar cosas rotas
-- **Features** - Añadir funcionalidades nuevas
-- **Docs** - Mejorar la documentación
-- **Templates** - Crear nuevas plantillas visuales
-- **i18n** - Añadir más idiomas
+We just ask that you're respectful to the rest of the community. We're here because we love the game and want to make cool stuff. That's it.
 
 ---
 
-## Preparar el entorno
+## How can I help?
 
-### Necesitas
+### Report bugs 🐛
+
+If something doesn't work:
+
+1. First search in [Issues](https://github.com/JoanJuan10/UC_TournamentView/issues) in case someone already reported it
+2. If it doesn't exist, create a new one with the Bug Report template
+3. The more info you give, the better (steps to reproduce, screenshots, console logs...)
+
+### Suggest ideas ✨
+
+Got an idea that would improve the plugin?
+
+1. Check Issues if someone already suggested it
+2. If not, create one with the Feature Request template
+3. Explain what problem it would solve and why it's cool
+
+### Write code 💻
+
+You can help with:
+- **Bug fixes** - Fix broken stuff
+- **Features** - Add new functionality
+- **Docs** - Improve documentation
+- **Templates** - Create new visual templates
+- **i18n** - Add more languages
+
+---
+
+## Setting up
+
+### You'll need
 
 - **Node.js** v14+
 - **npm** v6+
 - **Git**
-- Un editor (VS Code va genial)
+- An editor (VS Code works great)
 
-### Instalación
+### Installation
 
 ```bash
-# 1. Haz fork en GitHub
+# 1. Fork on GitHub
 
-# 2. Clona tu fork
-git clone https://github.com/TU_USUARIO/UC_TournamentView.git
+# 2. Clone your fork
+git clone https://github.com/YOUR_USERNAME/UC_TournamentView.git
 cd UC_TournamentView
 
-# 3. Añade el repo original como upstream
+# 3. Add original repo as upstream
 git remote add upstream https://github.com/JoanJuan10/UC_TournamentView.git
 
-# 4. Instala dependencias
+# 4. Install dependencies
 npm install
 
-# 5. Crea tu rama
-git checkout -b feature/mi-cosa-nueva
+# 5. Create your branch
+git checkout -b feature/my-new-thing
 ```
 
-### Comandos útiles
+### Useful commands
 
 ```bash
-npm run dev    # Modo watch (recarga automática)
-npm run build  # Compilar para release
-npm run lint   # Revisar el código
-```
-
----
-
-## Cómo desarrollar
-
-# Compilar para producción
-npm run build
-
-# Linter
-npm run lint
-
-# Tests (si aplica)
-npm test
+npm run dev    # Watch mode (auto reload)
+npm run build  # Compile for release
+npm run lint   # Check code
 ```
 
 ---
 
-## Proceso de Desarrollo
+## How to develop
 
-### 1. Crea una Rama
-
-```bash
-# Para features
-git checkout -b feature/nombre-descriptivo
-
-# Para bug fixes
-git checkout -b fix/nombre-del-bug
-
-# Para documentación
-### Flujo básico
+### Basic flow
 
 ```bash
-# 1. Crea tu rama
-git checkout -b feature/mi-cosa
+# 1. Create your branch
+git checkout -b feature/my-thing
 
-# 2. Desarrolla con npm run dev
+# 2. Develop with npm run dev
 
-# 3. Prueba en el juego
-# - Instala dist/tournamentview.user.js en Tampermonkey
-# - Ve a /Spectate en Undercards.net
-# - Comprueba que funciona
+# 3. Test in the game
+# - Install dist/tournamentview.user.js in Tampermonkey
+# - Go to /Spectate on Undercards.net
+# - Check that it works
 
-# 4. Commit y push
+# 4. Commit and push
 git add .
-git commit -m "feat: mi nueva funcionalidad"
-git push origin feature/mi-cosa
+git commit -m "feat: my new feature"
+git push origin feature/my-thing
 
-# 5. Abre un PR en GitHub
+# 5. Open a PR on GitHub
 ```
 
-### Nomenclatura de ramas
+### Branch naming
 
-- `feature/` → Cosa nueva
-- `fix/` → Arreglar algo
-- `docs/` → Documentación
+- `feature/` → New stuff
+- `fix/` → Fix something
+- `docs/` → Documentation
 
 ---
 
-## Estilo de código
+## Code style
 
-Nada del otro mundo, lo típico:
+Nothing fancy, just the basics:
 
 ```javascript
-// ✅ Bien
-class MiClase {
+// ✅ Good
+class MyClass {
   constructor() {
-    this.miVariable = 'valor';
+    this.myVariable = 'value';
   }
   
-  miMetodo() {
-    const resultado = this.calcular();
-    return resultado;
+  myMethod() {
+    const result = this.calculate();
+    return result;
   }
 }
 
-// ❌ Mal
-class miclase {
+// ❌ Bad
+class myclass {
   constructor() {
-    this.mi_variable = 'valor';  // snake_case no
+    this.my_variable = 'value';  // no snake_case
   }
 }
 ```
 
-- **Clases**: PascalCase → `UIManager`
-- **Variables/Métodos**: camelCase → `updatePlayerHP`
-- **2 espacios** para indentar
-- **Comillas simples** para strings
+- **Classes**: PascalCase → `UIManager`
+- **Variables/Methods**: camelCase → `updatePlayerHP`
+- **2 spaces** for indentation
+- **Single quotes** for strings
 
 ---
 
-## Commits y PRs
+## Commits and PRs
 
-Usamos commits tipo [Conventional Commits](https://www.conventionalcommits.org/):
+We use [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```bash
-feat: nueva funcionalidad
-fix: arreglo de bug
-docs: cambios en documentación
-refactor: mejora de código
+feat: new feature
+fix: bug fix
+docs: documentation changes
+refactor: code improvement
 ```
 
-Ejemplos:
+Examples:
 ```bash
 git commit -m "feat: add custom notification sounds"
 git commit -m "fix: HP bar not updating"
 git commit -m "docs: improve template guide"
 ```
 
-### Antes de abrir un PR
+### Before opening a PR
 
-Comprueba que:
-- [x] Funciona en modo espectador
-- [x] Funciona con las 3 plantillas
-- [x] Funciona en ES y EN
-- [x] No hay `console.log()` olvidados
-- [x] Compila sin errores (`npm run build`)
-
----
-
-## Crear plantillas
-
-¿Quieres crear una plantilla nueva? Mira la [Guía de Plantillas](docs/TEMPLATE_GUIDE.md).
-
-Básicamente:
-1. Crea el JSON en `templates/`
-2. Prueba que se ve bien
-3. Sube un PR con una captura
+Check that:
+- [x] Works in spectator mode
+- [x] Works with all 3 templates
+- [x] Works in ES and EN
+- [x] No forgotten `console.log()`
+- [x] Compiles without errors (`npm run build`)
 
 ---
 
-## Añadir idiomas
+## Creating templates
 
-¿Quieres añadir otro idioma? Busca `translations` en `src/index.js` y añade el tuyo siguiendo el patrón de `es` y `en`.
+Want to create a new template? Check the [Template Guide](docs/TEMPLATE_GUIDE.md).
 
----
-
-## Preguntas
-
-- **¿Cómo pruebo?** → `npm run build`, instala el `.user.js` en Tampermonkey, abre una partida en Spectate
-- **¿Puedo trabajar en un Issue?** → Sí, solo comenta para que sepamos que estás en ello
-- **¿Cuánto tarda la revisión?** → Intentamos en 2-3 días, pero somos amateurs así que paciencia 😅
+Basically:
+1. Create the JSON in `templates/`
+2. Test that it looks good
+3. Submit a PR with a screenshot
 
 ---
 
-**¡Gracias por querer ayudar! 🎉**
+## Adding languages
+
+Want to add another language? Search for `translations` in `src/index.js` and add yours following the `es` and `en` pattern.
+
+---
+
+## Questions
+
+- **How do I test?** → `npm run build`, install the `.user.js` in Tampermonkey, open a match in Spectate
+- **Can I work on an Issue?** → Yes, just comment so we know you're on it
+- **How long for review?** → We try within 2-3 days, but we're amateurs so be patient 😅
+
+---
+
+**Thanks for wanting to help! 🎉**

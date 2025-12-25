@@ -139,3 +139,5 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide.
 **Made with ❤️ by [JoanJuan10](https://github.com/JoanJuan10)**
 
 *Just a fan who wanted to make spectating more fun!*
+
+<sub>🤖 This project was developed with the assistance of [GitHub Copilot](https://github.com/features/copilot) as an AI coding companion throughout the entire process.</sub>
