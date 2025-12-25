@@ -4,47 +4,47 @@
 [![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/JoanJuan10/UC_TournamentView/releases)
 [![Status](https://img.shields.io/badge/status-beta-green.svg)](https://github.com/JoanJuan10/UC_TournamentView)
 
-> Professional overlay plugin for [UnderScript](https://github.com/UCProjects/UnderScript) that transforms the [Undercards.net](https://undercards.net) spectator experience into an esports-style broadcast view.
+> A fan-made overlay plugin for [UnderScript](https://github.com/UCProjects/UnderScript) that makes watching [Undercards.net](https://undercards.net) matches look like a tournament broadcast. Made by the community, for the community! 🎮
 
 **[🇪🇸 Versión en Español](docs/README_ES.md)**
 
 ![UC_TournamentView Demo](https://via.placeholder.com/800x400?text=UC_TournamentView+Demo)
 
-## ✨ Features
+## ✨ What does it do?
 
-- 🎨 **Template System** - 3 built-in templates + custom import/export
-- 🌐 **Multi-language** - English & Spanish with real-time switching
-- 📊 **Real-time Info** - HP, gold, souls, artifacts, cards, turn timer
-- 🎯 **Turn Indicator** - Visual animations for active player
-- 📜 **Action Log** - Floating panel with complete match history
-- 💾 **Persistence** - All settings saved automatically
+- 🎨 **Templates** - 3 built-in looks + make your own
+- 🌐 **Bilingual** - English & Spanish, switch anytime
+- 📊 **Live Stats** - HP, gold, souls, artifacts, cards, turn timer
+- 🎯 **Turn Indicator** - See who's playing at a glance
+- 📜 **Action Log** - Keep track of everything that happens
+- 💾 **Auto-save** - Your settings are remembered
 
 ## 🚀 Quick Install
 
-### Requirements
+### You'll need
 
-1. Modern browser (Chrome, Firefox, Edge, Opera)
-2. [Tampermonkey](https://www.tampermonkey.net/)
-3. [UnderScript](https://github.com/UCProjects/UnderScript)
+1. A modern browser (Chrome, Firefox, Edge, Opera)
+2. [Tampermonkey](https://www.tampermonkey.net/) extension
+3. [UnderScript](https://github.com/UCProjects/UnderScript) installed
 
-### Installation
+### How to install
 
-1. **Download**: [Latest Release](https://github.com/JoanJuan10/UC_TournamentView/releases/latest/download/tournamentview.user.js)
-2. **Install**: Click the file → Tampermonkey opens → Click "Install"
-3. **Enable**: Undercards.net → UnderScript menu → Settings → Plugins → TournamentView → ✅ Enable
-4. **Use**: Visit any match in `/Spectate` mode
+1. **Download**: [Get the latest version](https://github.com/JoanJuan10/UC_TournamentView/releases/latest/download/tournamentview.user.js)
+2. **Install**: Click the file → Tampermonkey pops up → Hit "Install"
+3. **Enable**: Go to Undercards.net → UnderScript menu → Settings → Plugins → TournamentView → Turn it on ✅
+4. **Enjoy**: Go watch any match in `/Spectate` mode!
 
 ## 🎨 Templates
 
-| Template | Style | Best For |
+| Template | Style | Good for |
 |----------|-------|----------|
-| **Default** | Modern purple/blue gradients | General streaming |
-| **Classic Spectator** | Clean blue/white | Professional look |
-| **Dark Mode Pro** | Dark with cyan/orange accents | Night sessions |
+| **Default** | Purple/blue gradients | Everyday use |
+| **Classic Spectator** | Clean blue/white | Simple look |
+| **Dark Mode Pro** | Dark with cyan/orange | Late night sessions |
 
-### Custom Templates
+### Make your own!
 
-Create your own template as JSON:
+You can create custom templates as JSON files:
 
 ```json
 {
@@ -62,77 +62,80 @@ Create your own template as JSON:
 }
 ```
 
-See [Template Guide](docs/TEMPLATE_GUIDE.md) for details.
+Check out the [Template Guide](docs/TEMPLATE_GUIDE.md) if you want to get creative!
 
-## ⚙️ Configuration
+## ⚙️ Settings
 
-Access settings via: **UnderScript Menu → Plugins → TournamentView**
+Find them at: **UnderScript Menu → Plugins → TournamentView**
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| Enable | Turn plugin on/off | Off |
-| Language | English or Spanish | Spanish |
-| Template | Active visual template | Default |
+| Option | What it does | Default |
+|--------|--------------|---------|
+| Enable | Turn the overlay on/off | Off |
+| Language | Switch between EN/ES | Spanish |
+| Template | Pick your favorite look | Default |
 
-### Template Management
+### Template buttons
 
-- ⭐ **Star icon** - Activate template
-- 💾 **Download icon** - Export as JSON
-- 🗑️ **Trash icon** - Delete custom templates
+- ⭐ **Star** - Use this template
+- 💾 **Download** - Save it as JSON
+- 🗑️ **Trash** - Delete (only custom ones)
 
-## 🛠️ Development
+## 🛠️ Want to contribute?
 
 ```bash
 git clone https://github.com/JoanJuan10/UC_TournamentView.git
 cd UC_TournamentView
 npm install
-npm start    # Watch mode
-npm run build  # Production build
+npm start    # Dev mode with auto-reload
+npm run build  # Build for release
 ```
 
-### Project Structure
+### Project layout
 
 ```
-├── src/index.js           # Main source (~4900 lines)
-├── dist/                  # Compiled output (~102 KiB)
+├── src/index.js           # All the code (~4900 lines)
+├── dist/                  # Compiled plugin
 ├── docs/                  # Documentation
 └── templates/             # Template examples
 ```
 
-## 📚 Documentation
+## 📚 Docs
 
-| Document | Description |
-|----------|-------------|
-| [User Guide](docs/USER_GUIDE.md) | How to use the plugin |
-| [Development Guide](docs/DEVELOPMENT.md) | Setup and architecture |
-| [Template Guide](docs/TEMPLATE_GUIDE.md) | Create custom templates |
-| [API Reference](docs/API.md) | Technical documentation |
+| Doc | What's in it |
+|-----|--------------|
+| [User Guide](docs/USER_GUIDE.md) | How to use everything |
+| [Dev Guide](docs/DEVELOPMENT.md) | For contributors |
+| [Template Guide](docs/TEMPLATE_GUIDE.md) | Make custom templates |
+| [API Reference](docs/API.md) | Technical stuff |
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add AmazingFeature'`)
-4. Push (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+We'd love your help! Here's the quick version:
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+1. Fork the repo
+2. Create a branch (`git checkout -b feature/CoolThing`)
+3. Make your changes
+4. Push and open a PR
 
-## 🐛 Issues & Requests
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide.
 
-- **Bug Reports**: [Open an issue](https://github.com/JoanJuan10/UC_TournamentView/issues/new?template=bug_report.md)
-- **Feature Requests**: [Open an issue](https://github.com/JoanJuan10/UC_TournamentView/issues/new?template=feature_request.md)
+## 🐛 Found a bug? Have an idea?
+
+- **Bugs**: [Report it here](https://github.com/JoanJuan10/UC_TournamentView/issues/new?template=bug_report.md)
+- **Ideas**: [Share them here](https://github.com/JoanJuan10/UC_TournamentView/issues/new?template=feature_request.md)
 
 ## 📝 License
 
-MIT License - see [LICENSE](LICENSE) for details.
+MIT - do whatever you want with it! See [LICENSE](LICENSE).
 
 ## 🔗 Links
 
-- [Undercards.net](https://undercards.net)
-- [UnderScript](https://github.com/UCProjects/UnderScript)
-- [Tampermonkey](https://www.tampermonkey.net/)
+- [Undercards.net](https://undercards.net) - The game we love
+- [UnderScript](https://github.com/UCProjects/UnderScript) - Required for this to work
+- [Tampermonkey](https://www.tampermonkey.net/) - Browser extension needed
 
 ---
 
-**Made with ❤️ by [JoanJuan10](https://github.com/JoanJuan10) & HectorPSI**
+**Made with ❤️ by [JoanJuan10](https://github.com/JoanJuan10)**
+
+*Just a fan who wanted to make spectating more fun!*

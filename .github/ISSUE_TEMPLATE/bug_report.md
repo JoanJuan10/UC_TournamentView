@@ -1,62 +1,63 @@
 ---
-name: Bug Report
-about: Reporta un bug o error del plugin
+name: 🐛 Bug Report / Reporte de Bug
+about: Report a bug or error / Reporta un bug o error
 title: '[BUG] '
 labels: bug
 assignees: ''
 ---
 
-## 🐛 Descripción del Bug
+<!-- 🇬🇧 English below | 🇪🇸 Español abajo -->
 
-Una descripción clara y concisa del bug.
+## 🐛 Bug Description / Descripción del Bug
 
-## 🔄 Pasos para Reproducir
+<!-- EN: A clear description of what the bug is -->
+<!-- ES: Una descripción clara del bug -->
 
-1. Ve a '...'
-2. Haz clic en '...'
-3. Observa el error '...'
+## 🔄 Steps to Reproduce / Pasos para Reproducir
 
-## ✅ Comportamiento Esperado
+1. Go to '...' / Ve a '...'
+2. Click on '...' / Haz clic en '...'
+3. See error / Observa el error
 
-Describe qué esperabas que sucediera.
+## ✅ Expected Behavior / Comportamiento Esperado
 
-## ❌ Comportamiento Actual
+<!-- EN: What you expected to happen -->
+<!-- ES: Qué esperabas que sucediera -->
 
-Describe qué sucedió en realidad.
+## ❌ Actual Behavior / Comportamiento Actual
 
-## 📸 Capturas de Pantalla
+<!-- EN: What actually happened -->
+<!-- ES: Qué sucedió en realidad -->
 
-Si aplica, añade capturas de pantalla para ayudar a explicar el problema.
+## 📸 Screenshots / Capturas
 
-## 🖥️ Entorno
+<!-- EN: If applicable, add screenshots -->
+<!-- ES: Si aplica, añade capturas -->
 
-- **Navegador**: [ej. Chrome 120, Firefox 121]
-- **Sistema Operativo**: [ej. Windows 11, macOS 14]
-- **Versión del Plugin**: [ej. 0.1.0]
-- **Versión de UnderScript**: [ej. 2.0.0]
-- **Versión de Tampermonkey**: [ej. 5.0.0]
+## 🖥️ Environment / Entorno
 
-## 📝 Información Adicional
+- **Browser / Navegador**: [e.g. Chrome 120]
+- **OS / Sistema**: [e.g. Windows 11]
+- **Plugin Version / Versión**: [e.g. 0.1.0]
+- **UnderScript Version / Versión**: [e.g. 2.0.0]
 
-### ¿En qué modo estás?
-- [ ] Modo Espectador (`/Spectate`)
-- [ ] Modo Jugador (no debería funcionar aquí)
-- [ ] Otro: ___________
+## 📋 Additional Info / Info Adicional
 
-### ¿Qué plantilla estás usando?
+### Mode / Modo
+- [ ] Spectator / Espectador (`/Spectate`)
+- [ ] Other / Otro: ___________
+
+### Template / Plantilla
 - [ ] Default Tournament View
 - [ ] Classic Spectator
 - [ ] Dark Mode Pro
-- [ ] Plantilla personalizada: ___________
+- [ ] Custom / Personalizada: ___________
 
 ### Console Logs
 
-Si hay errores en la consola de DevTools (F12), pégalos aquí:
+<!-- EN: If there are errors in DevTools (F12), paste them here -->
+<!-- ES: Si hay errores en DevTools (F12), pégalos aquí -->
 
 ```
 [TournamentView] ...
 ```
-
-## 🔗 Contexto Adicional
-
-Cualquier otra información relevante sobre el problema.

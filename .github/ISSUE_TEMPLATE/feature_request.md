@@ -1,47 +1,55 @@
 ---
-name: Feature Request
-about: Sugiere una nueva funcionalidad para el plugin
+name: ✨ Feature Request / Sugerencia
+about: Suggest a new feature / Sugiere una nueva funcionalidad
 title: '[FEATURE] '
 labels: enhancement
 assignees: ''
 ---
 
-## 🚀 Descripción de la Funcionalidad
+<!-- 🇬🇧 English below | 🇪🇸 Español abajo -->
 
-Una descripción clara y concisa de qué funcionalidad te gustaría ver.
+## 🚀 Feature Description / Descripción
 
-## 💡 ¿Por qué sería útil?
+<!-- EN: A clear description of what you'd like to see -->
+<!-- ES: Una descripción clara de qué funcionalidad te gustaría ver -->
 
-Explica el problema que esta funcionalidad resolvería o la mejora que aportaría.
+## 💡 Why would this be useful? / ¿Por qué sería útil?
 
-## 📋 Comportamiento Propuesto
+<!-- EN: Explain what problem this would solve or what improvement it would bring -->
+<!-- ES: Explica qué problema resolvería o qué mejora aportaría -->
 
-Describe cómo debería funcionar esta funcionalidad:
+## 📋 Proposed Behavior / Comportamiento Propuesto
 
-1. El usuario hace...
-2. El plugin muestra...
-3. Resultado final...
+<!-- EN: Describe how it should work -->
+<!-- ES: Describe cómo debería funcionar -->
 
-## 🎨 Mockups / Diseños (Opcional)
+1. User does... / El usuario hace...
+2. Plugin shows... / El plugin muestra...
+3. Result... / Resultado...
 
-Si tienes alguna idea visual, compártela aquí (capturas, dibujos, etc.)
+## 🎨 Mockups / Designs (Optional / Opcional)
 
-## 🔄 Alternativas Consideradas
+<!-- EN: If you have any visual ideas, share them here -->
+<!-- ES: Si tienes alguna idea visual, compártela aquí -->
 
-¿Has pensado en otras formas de lograr lo mismo? Descríbelas aquí.
+## 🔄 Alternatives Considered / Alternativas
 
-## 📊 Impacto
+<!-- EN: Have you thought of other ways to achieve the same? -->
+<!-- ES: ¿Has pensado en otras formas de lograr lo mismo? -->
 
-- [ ] Esta funcionalidad afectaría a todos los usuarios
-- [ ] Sería una opción configurable
-- [ ] Solo afectaría a plantillas personalizadas
+## 📊 Impact / Impacto
 
-## 🛠️ ¿Estás dispuesto a contribuir?
+- [ ] Would affect all users / Afectaría a todos los usuarios
+- [ ] Would be a configurable option / Sería una opción configurable
+- [ ] Only affects custom templates / Solo afectaría a plantillas personalizadas
 
-- [ ] Puedo implementar esta funcionalidad yo mismo (PR)
-- [ ] Puedo ayudar con testing
-- [ ] Solo estoy sugiriendo la idea
+## 🛠️ Willing to contribute? / ¿Dispuesto a contribuir?
 
-## 🔗 Contexto Adicional
+- [ ] I can implement this myself (PR) / Puedo implementarlo yo (PR)
+- [ ] I can help with testing / Puedo ayudar probando
+- [ ] Just suggesting the idea / Solo sugiero la idea
 
-Cualquier otra información o recursos relevantes.
+## 🔗 Additional Context / Contexto Adicional
+
+<!-- EN: Any other relevant info -->
+<!-- ES: Cualquier otra información relevante -->

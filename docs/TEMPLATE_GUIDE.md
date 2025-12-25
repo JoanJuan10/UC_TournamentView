@@ -1,87 +1,64 @@
-# 🎨 Guía de Plantillas - UC_TournamentView
+# 🎨 Guía de Plantillas
 
-## Tabla de Contenidos
+Cómo crear tus propias plantillas para UC_TournamentView.
 
-- [Introducción](#introducción)
-- [Estructura de una Plantilla](#estructura-de-una-plantilla)
-- [Variables Dinámicas](#variables-dinámicas)
+## Índice
+
+- [¿Qué es una plantilla?](#qué-es-una-plantilla)
+- [Estructura básica](#estructura-básica)
+- [Variables](#variables)
 - [Clases CSS](#clases-css)
-- [Ejemplos Completos](#ejemplos-completos)
-- [Best Practices](#best-practices)
+- [Ejemplos](#ejemplos)
+- [Tips](#tips)
 - [Validación](#validación)
-- [Distribución](#distribución)
 
 ---
 
-## Introducción
+## ¿Qué es una plantilla?
 
-Las plantillas en UC_TournamentView permiten personalizar completamente el aspecto visual del overlay de espectador. Cada plantilla es un archivo JSON que define:
+Una plantilla es un archivo JSON que define cómo se ve el overlay. Puedes cambiar:
 
-- **Metadatos**: Información sobre la plantilla (nombre, autor, versión, etc.)
-- **Variables**: Valores reutilizables (colores, fuentes, etc.)
-- **CSS Personalizado**: Estilos que se aplican al overlay
+- **Colores** - Primarios, secundarios, fondos...
+- **Fuentes** - Tipografía, tamaños...
+- **CSS personalizado** - Lo que quieras, básicamente
 
 ---
 
-## Estructura de una Plantilla
+## Estructura básica
 
-### Archivo JSON Básico
+Un archivo de plantilla tiene esta pinta:
 
 ```json
 {
   "metadata": {
-    "id": "my-template",
-    "name": "My Awesome Template",
+    "id": "mi-plantilla",
+    "name": "Mi Plantilla Molona",
     "version": "1.0.0",
-    "author": "Your Name",
-    "description": "A beautiful custom template for tournaments",
-    "isDefault": false
+    "author": "Tu Nombre",
+    "description": "Una plantilla que hice yo"
   },
   
   "variables": {
     "primaryColor": "#6a0dad",
     "secondaryColor": "#00bcd4",
-    "backgroundColor": "rgba(0, 0, 0, 0.85)",
-    "fontFamily": "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    "fontSize": "16px",
-    "borderRadius": "10px",
-    "panelWidth": "858px"
+    "backgroundColor": "rgba(0, 0, 0, 0.85)"
   },
   
   "customCSS": "/* Tu CSS aquí */"
 }
 ```
 
-### Campo `metadata`
+### Campos de metadata
 
-| Campo | Tipo | Requerido | Descripción |
-|-------|------|-----------|-------------|
-| `id` | String | ✅ | Identificador único (sin espacios, lowercase) |
-| `name` | String | ✅ | Nombre mostrado en Settings |
-| `version` | String | ✅ | Versión semántica (1.0.0) |
-| `author` | String | ✅ | Nombre del creador |
-| `description` | String | ❌ | Descripción corta (max 100 chars) |
-| `isDefault` | Boolean | ❌ | Si es plantilla predefinida (siempre false para custom) |
+| Campo | Obligatorio | Qué es |
+|-------|-------------|--------|
+| `id` | ✅ | ID único (sin espacios, minúsculas) |
+| `name` | ✅ | Nombre que se ve en Settings |
+| `version` | ✅ | Versión (1.0.0, 1.1.0...) |
+| `author` | ✅ | Tu nombre o nick |
+| `description` | ❌ | Descripción corta |
 
-**Ejemplo**:
-```json
-{
-  "metadata": {
-    "id": "neon-cyberpunk",
-    "name": "Neon Cyberpunk",
-    "version": "2.1.0",
-    "author": "JohnDoe",
-    "description": "Futuristic neon-lit cyberpunk style",
-    "isDefault": false
-  }
-}
-```
-
-### Campo `variables`
-
-Variables reutilizables que se interpolan en el CSS con la sintaxis `{{variableName}}`.
-
-**Variables Recomendadas**:
+### Variables recomendadas
 
 ```json
 {

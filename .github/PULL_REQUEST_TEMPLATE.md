@@ -1,73 +1,49 @@
 # Pull Request
 
-## 📝 Descripción
+<!-- 🇬🇧 English below | 🇪🇸 Español abajo -->
 
-Describe los cambios realizados en este PR.
+## 📝 Description / Descripción
 
-## 🔗 Issue Relacionado
+<!-- EN: Describe the changes in this PR -->
+<!-- ES: Describe los cambios en este PR -->
+
+## 🔗 Related Issue / Issue Relacionado
 
 Fixes #(issue)
 
-## 🔄 Tipo de Cambio
+## 🔄 Type of Change / Tipo de Cambio
 
-- [ ] 🐛 Bug fix (cambio que corrige un issue)
-- [ ] ✨ Nueva funcionalidad (cambio que añade funcionalidad)
-- [ ] 💥 Breaking change (cambio que rompe compatibilidad)
-- [ ] 📚 Documentación (cambios solo en docs)
-- [ ] 🎨 Estilo/Refactor (cambios que no afectan funcionalidad)
-- [ ] ⚡ Performance (mejora de rendimiento)
-- [ ] ✅ Tests (añade o corrige tests)
+- [ ] 🐛 Bug fix / Corrección de bug
+- [ ] ✨ New feature / Nueva funcionalidad
+- [ ] 💥 Breaking change / Cambio que rompe compatibilidad
+- [ ] 📚 Documentation / Documentación
+- [ ] 🎨 Style/Refactor / Estilo/Refactor
+- [ ] ⚡ Performance / Rendimiento
 
 ## ✅ Checklist
 
-- [ ] Mi código sigue el estilo del proyecto
-- [ ] He revisado mi propio código
-- [ ] He comentado código complejo donde era necesario
-- [ ] He actualizado la documentación correspondiente
-- [ ] Mis cambios no generan nuevas warnings
-- [ ] He probado que mi fix/feature funciona correctamente
-- [ ] He probado en diferentes navegadores (Chrome, Firefox)
-- [ ] He probado con diferentes plantillas
+- [ ] I've tested my changes / He probado mis cambios
+- [ ] My code follows the project style / Mi código sigue el estilo del proyecto
+- [ ] I've updated the docs if needed / He actualizado los docs si era necesario
+- [ ] No new warnings / Sin nuevos warnings
 
-## 🧪 Testing
+## 🧪 Testing / Pruebas
 
-Describe las pruebas que realizaste:
+<!-- EN: Describe what you tested -->
+<!-- ES: Describe qué probaste -->
 
-- [ ] Probado en modo espectador
-- [ ] Probado con plantilla Default Tournament View
-- [ ] Probado con plantilla Dark Mode Pro
-- [ ] Probado con i18n (ES y EN)
-- [ ] Probado en Chrome
-- [ ] Probado en Firefox
+- [ ] Tested in Spectator mode / Probado en modo espectador
+- [ ] Tested with different templates / Probado con diferentes plantillas
+- [ ] Tested i18n (ES and EN) / Probado i18n (ES y EN)
+- [ ] Tested in Chrome
+- [ ] Tested in Firefox
 
-## 📸 Capturas de Pantalla (si aplica)
+## 📸 Screenshots (if visual changes / si hay cambios visuales)
 
-Añade capturas de antes y después si hay cambios visuales.
+<!-- EN: Add before/after screenshots if applicable -->
+<!-- ES: Añade capturas antes/después si aplica -->
 
-## 📋 Cambios Específicos
+## 📋 Notes for Reviewers / Notas para Revisores
 
-### Archivos Modificados
-
-- `src/index.js`: Descripción de cambios
-- `templates/X.json`: Descripción de cambios
-- `docs/X.md`: Descripción de cambios
-
-### Breaking Changes
-
-Si hay breaking changes, descríbelos aquí y cómo migrar:
-
-```javascript
-// Antes
-oldMethod();
-
-// Ahora
-newMethod();
-```
-
-## 🔗 Información Adicional
-
-Cualquier contexto adicional sobre el PR.
-
----
-
-**Nota para Revisores**: Por favor revisen especialmente [menciona áreas críticas].
+<!-- EN: Any specific areas to focus on? -->
+<!-- ES: ¿Alguna área específica a revisar? -->

@@ -1,58 +1,57 @@
-# 🛠️ Guía de Desarrollo - UC_TournamentView
+# 🛠️ Guía de Desarrollo
 
-## Tabla de Contenidos
+Para los que quieren tocar el código.
 
-- [Configuración del Entorno](#configuración-del-entorno)
-- [Arquitectura del Proyecto](#arquitectura-del-proyecto)
-- [Sistema de Plantillas](#sistema-de-plantillas)
+## Índice
+
+- [Preparar el entorno](#preparar-el-entorno)
+- [Cómo está organizado](#cómo-está-organizado)
+- [Sistema de plantillas](#sistema-de-plantillas)
 - [Sistema i18n](#sistema-i18n)
-- [Workflow de Desarrollo](#workflow-de-desarrollo)
+- [Desarrollo día a día](#desarrollo-día-a-día)
 - [Testing](#testing)
-- [Compilación y Distribución](#compilación-y-distribución)
+- [Compilar y distribuir](#compilar-y-distribuir)
 - [Debugging](#debugging)
 
 ---
 
-## Configuración del Entorno
+## Preparar el entorno
 
-### Requisitos
+### Lo que necesitas
 
-- **Node.js**: v14.0.0 o superior
-- **npm**: v6.0.0 o superior
-- **Git**: Para control de versiones
-- **Editor**: VS Code recomendado
+- **Node.js**: v14+
+- **npm**: v6+
+- **Git**
+- **Editor**: VS Code recomendado (pero usa el que quieras)
 
 ### Instalación
 
 ```bash
-# Clonar el repositorio
+# Clonar
 git clone https://github.com/JoanJuan10/UC_TournamentView.git
 cd UC_TournamentView
 
 # Instalar dependencias
 npm install
 
-# Modo desarrollo (watch mode)
+# Modo dev (recompila automáticamente)
 npm run dev
 
-# Compilar para producción
+# Compilar para release
 npm run build
 ```
 
-### Scripts Disponibles
+### Scripts
 
-```json
-{
-  "dev": "webpack --watch --mode development",
-  "build": "webpack --mode production",
-  "lint": "eslint src/**/*.js",
-  "test": "jest"
-}
-```
+| Comando | Qué hace |
+|---------|----------|
+| `npm run dev` | Watch mode - recarga al guardar |
+| `npm run build` | Compila para producción |
+| `npm run lint` | Revisa el código |
 
 ---
 
-## Arquitectura del Proyecto
+## Cómo está organizado
 
 ### Estructura de Directorios
 
@@ -619,7 +618,7 @@ module.exports = {
 // @namespace    https://github.com/JoanJuan10/UC_TournamentView
 // @version      0.1.0
 // @description  Professional spectator overlay for Undercards tournaments
-// @author       JoanJuan & HectorPSI
+// @author       JoanJuan10
 // @match        https://undercards.net/*
 // @grant        none
 // @require      https://underscript.xyz/api/v2

@@ -1,21 +1,22 @@
-# 📚 API Reference - UC_TournamentView
+# 📚 API Reference
 
-## Tabla de Contenidos
+Documentación técnica del código. Si solo quieres usar el plugin, no necesitas leer esto.
 
-- [Clases Principales](#clases-principales)
-- [Sistema de Eventos](#sistema-de-eventos)
+## Índice
+
+- [Clases principales](#clases-principales)
+- [Sistema de eventos](#sistema-de-eventos)
 - [Sistema i18n](#sistema-i18n)
-- [Sistema de Plantillas](#sistema-de-plantillas)
-- [UnderScript API](#underscript-api)
-- [Extensiones](#extensiones)
+- [Sistema de plantillas](#sistema-de-plantillas)
+- [API de UnderScript](#api-de-underscript)
 
 ---
 
-## Clases Principales
+## Clases principales
 
 ### UIManager
 
-Gestiona la interfaz del overlay y todas las interacciones con el DOM.
+La clase que maneja todo el overlay y el DOM.
 
 #### Constructor
 
@@ -31,73 +32,49 @@ class UIManager {
 }
 ```
 
-**Parámetros**:
-- `templateManager` (TemplateManager): Instancia del gestor de plantillas
-- `i18n` (I18n): Instancia del sistema de internacionalización
-
 ---
 
-#### Métodos de Ciclo de Vida
+#### Métodos de ciclo de vida
 
 ##### `init(): void`
 
-Inicializa el overlay y lo inyecta en el DOM.
+Inicializa el overlay. Solo funciona si estás en `/Spectate`.
 
 ```javascript
 uiManager.init();
 ```
 
-**Comportamiento**:
-- Verifica que estás en modo `/Spectate`
-- Carga la plantilla activa
-- Inyecta el HTML y CSS en el DOM
-- Registra event listeners
-
-**Throws**: Error si no está en modo espectador
-
 ---
 
 ##### `destroy(): void`
 
-Destruye el overlay y limpia todos los recursos.
+Limpia todo y quita el overlay del DOM.
 
 ```javascript
 uiManager.destroy();
 ```
 
-**Comportamiento**:
-- Remueve el overlay del DOM
-- Limpia event listeners
-- Resetea el estado interno
-
 ---
 
 ##### `refresh(): void`
 
-Regenera el overlay completamente (útil después de cambiar plantilla o idioma).
+Regenera el overlay (útil después de cambiar plantilla o idioma).
 
 ```javascript
 uiManager.refresh();
 ```
 
-**Comportamiento**:
-- Llama a `destroy()`
-- Llama a `init()`
-
 ---
 
-#### Métodos de Actualización
+#### Métodos de actualización
 
 ##### `updatePlayerHP(hp: number, maxHP: number): void`
 
-Actualiza la vida del jugador principal.
+Actualiza la vida del jugador.
 
 ```javascript
 uiManager.updatePlayerHP(25, 30);
 ```
-
-**Parámetros**:
-- `hp` (number): Vida actual
 - `maxHP` (number): Vida máxima
 
 **Comportamiento**:

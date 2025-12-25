@@ -1,77 +1,72 @@
-# 📚 Documentation Index - UC_TournamentView
+# 📚 Documentación
 
-> Complete documentation hub for the TournamentView plugin
+Aquí están todos los docs del plugin. Si tienes dudas, empieza por la guía de usuario.
 
-**Version:** 0.1.0  
-**Status:** ✅ Beta - Production Ready
-
----
-
-## 📖 Main Documentation
-
-### For Users
-
-| Document | Description |
-|----------|-------------|
-| [USER_GUIDE.md](USER_GUIDE.md) | Complete user guide: installation, configuration, troubleshooting |
-| [README_ES.md](README_ES.md) | Spanish version of the main README |
-
-### For Template Creators
-
-| Document | Description |
-|----------|-------------|
-| [TEMPLATE_GUIDE.md](TEMPLATE_GUIDE.md) | How to create custom visual templates |
-| [example_template.json](example_template.json) | Example template with comments |
-
-### For Developers
-
-| Document | Description |
-|----------|-------------|
-| [DEVELOPMENT.md](DEVELOPMENT.md) | Development setup, architecture, workflow |
-| [API.md](API.md) | Technical API reference |
-| [CONTRIBUTING.md](../CONTRIBUTING.md) | Contribution guidelines |
+**Versión:** 0.1.0  
+**Estado:** Beta (pero funciona bien 👍)
 
 ---
 
-## 📋 Technical Reference (Archived)
+## Para usuarios
 
-These documents contain detailed technical information from the development process. They are preserved for reference but the main documentation above is recommended for most users.
+| Doc | Qué hay |
+|-----|---------|
+| [USER_GUIDE.md](USER_GUIDE.md) | Cómo instalar y usar el plugin |
+| [README_ES.md](README_ES.md) | README principal en español |
 
-### UnderScript Integration
+## Para crear plantillas
 
-| Document | Description |
-|----------|-------------|
-| [underscript.js](underscript.js) | UnderScript source reference |
-| [uc_replays.js](uc_replays.js) | UC Replays plugin reference (FakeSetting pattern) |
+| Doc | Qué hay |
+|-----|---------|
+| [TEMPLATE_GUIDE.md](TEMPLATE_GUIDE.md) | Cómo crear tus propias plantillas |
+| [example_template.json](example_template.json) | Plantilla de ejemplo |
 
-### Development History
+## Para desarrolladores
 
-| Document | Description |
-|----------|-------------|
+| Doc | Qué hay |
+|-----|---------|
+| [DEVELOPMENT.md](DEVELOPMENT.md) | Setup, arquitectura, cómo desarrollar |
+| [API.md](API.md) | Referencia técnica del código |
+| [CONTRIBUTING.md](../CONTRIBUTING.md) | Cómo contribuir al proyecto |
+
+---
+
+## Referencia técnica (archivada)
+
+Estos docs tienen info técnica detallada del desarrollo. Están aquí por si alguien los necesita, pero para la mayoría de cosas con los de arriba vas bien.
+
+### Integración con UnderScript
+
+| Doc | Qué hay |
+|-----|---------|
+| [underscript.js](underscript.js) | Código de UnderScript de referencia |
+| [uc_replays.js](uc_replays.js) | Plugin UC Replays (patrón FakeSetting) |
+
+### Desarrollo interno
 | [INTERNAL_DOCS.md](INTERNAL_DOCS.md) | Consolidated internal documentation (project specs, lessons learned, bugs resolved) |
 | [ARQUITECTURA_SETTINGS.md](ARQUITECTURA_SETTINGS.md) | Settings system architecture |
 
 ---
 
-## 🔗 Quick Links
+## Links rápidos
 
-- **[Main README](../README.md)** - Project overview (English)
-- **[README Español](README_ES.md)** - Versión en español
-- **[GitHub Issues](https://github.com/JoanJuan10/UC_TournamentView/issues)** - Report bugs / Request features
-- **[Releases](https://github.com/JoanJuan10/UC_TournamentView/releases)** - Download latest version
-
----
-
-## 📊 Project Status
-
-| Category | Status |
-|----------|--------|
-| Core Features | ✅ Complete |
-| Template System | ✅ Complete (3 templates + import/export) |
-| i18n | ✅ Complete (ES/EN) |
-| Documentation | ✅ Complete |
-| Known Bugs | 0 |
+- **[README principal](../README.md)** - Inglés
+- **[README Español](README_ES.md)**
+- **[GitHub Issues](https://github.com/JoanJuan10/UC_TournamentView/issues)** - Reportar bugs o pedir features
+- **[Releases](https://github.com/JoanJuan10/UC_TournamentView/releases)** - Descargar la última versión
 
 ---
 
-**Last updated:** December 2025
+## Estado del proyecto
+
+| Qué | Cómo va |
+|-----|---------|
+| Funcionalidades principales | ✅ Listas |
+| Sistema de plantillas | ✅ 3 plantillas + importar/exportar |
+| Idiomas | ✅ ES/EN |
+| Documentación | ✅ Lista |
+| Bugs conocidos | 0 🎉 |
+
+---
+
+**Actualizado:** Diciembre 2025
