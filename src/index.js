@@ -30,10 +30,10 @@ class I18n {
                 'notif.receivedDamage': '{player} recibió {damage} de daño',
                 'notif.healed': '{player} sanó {heal} HP',
                 'notif.cardPlayed': '{player} jugó {card}',
-                'notif.spellCast': '{player} lanzó {spell}',
-                'notif.monsterDestroyed': '{monster} fue destruido',
-                'notif.artifactActivated': 'Artefacto activado: {artifact}',
-                'notif.soulEffect': 'Efecto de alma: {soul}',
+                'notif.spellCast': '{player} usó {spell}',
+                'notif.monsterDestroyed': 'Monstruo destruido',
+                'notif.artifactActivated': '{artifact}',
+                'notif.soulEffect': '{soul}',
                 
                 // Settings
                 'settings.enabled': 'Activar Tournament View',
@@ -72,9 +72,9 @@ class I18n {
                 'notif.healed': '{player} healed {heal} HP',
                 'notif.cardPlayed': '{player} played {card}',
                 'notif.spellCast': '{player} cast {spell}',
-                'notif.monsterDestroyed': '{monster} was destroyed',
-                'notif.artifactActivated': 'Artifact activated: {artifact}',
-                'notif.soulEffect': 'Soul effect: {soul}',
+                'notif.monsterDestroyed': 'Monster destroyed',
+                'notif.artifactActivated': '{artifact}',
+                'notif.soulEffect': '{soul}',
                 
                 // Settings
                 'settings.enabled': 'Enable Tournament View',
@@ -651,7 +651,7 @@ ${customCSS}
     margin-top: 100px !important;
 }
 
-/* Tournament View Base Styles */
+/* Tournament View Base Styles - V2 Inyección en DOM */
 #uc-tournament-view {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: var(--tv-text-color, #ffffff);
@@ -659,16 +659,44 @@ ${customCSS}
     top: 0;
     left: 0;
     right: 0;
-    bottom: 0;
-    z-index: 9999;
     pointer-events: none;
+    z-index: 9999;
 }
 
 #uc-tournament-view * {
     box-sizing: border-box;
 }
 
-/* Header Bar */
+/* 
+ * PANELES DE JUGADOR - Inyectados en el DOM de #phase2
+ * Estos elementos se inyectan relativamente al #board:
+ * - .tv-opponent-info: ANTES del board (arriba)
+ * - .tv-player-info: DESPUÉS del board (abajo)
+ */
+.tv-player-info,
+.tv-opponent-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 0.75rem 1.5rem;
+    margin: 0.5rem auto;
+    max-width: 90%;
+    background: linear-gradient(135deg, var(--tv-primary-color) 0%, var(--tv-secondary-color) 100%);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    pointer-events: auto;
+}
+
+.tv-player-info.active-turn,
+.tv-opponent-info.active-turn {
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3);
+    border: 2px solid #fbbf24;
+}
+
+/* Header Bar - Solo para fallback (UI antigua) */
 .tv-header {
     position: absolute;
     top: 0;
@@ -684,26 +712,15 @@ ${customCSS}
     pointer-events: auto;
 }
 
-.tv-player-info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+/* Cuando está dentro del header (fallback), usar flex: 1 */
+.tv-header .tv-player-info,
+.tv-header .tv-opponent-info {
     flex: 1;
-    position: relative;
-    transition: all 0.3s ease;
-}
-
-.tv-player-info.active-turn::before {
-    content: '';
-    position: absolute;
-    top: -8px;
-    left: -8px;
-    right: -8px;
-    bottom: -8px;
-    border: 3px solid #fbbf24;
-    border-radius: 12px;
-    animation: pulse-border 2s infinite;
-    pointer-events: none;
+    margin: 0;
+    max-width: none;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
 }
 
 @keyframes pulse-border {
@@ -965,31 +982,6 @@ ${customCSS}
 @keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.5; }
-}
-
-/* Opponent Info */
-.tv-opponent-info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex: 1;
-    justify-content: flex-end;
-    flex-direction: row-reverse;
-    position: relative;
-    transition: all 0.3s ease;
-}
-
-.tv-opponent-info.active-turn::before {
-    content: '';
-    position: absolute;
-    top: -8px;
-    left: -8px;
-    right: -8px;
-    bottom: -8px;
-    border: 3px solid #fbbf24;
-    border-radius: 12px;
-    animation: pulse-border 2s infinite;
-    pointer-events: none;
 }
 
 /* Result Overlay */
@@ -2615,23 +2607,331 @@ function getArtifactCounter(artifact) {
 // UI MANAGER
 // ============================================
 
+/**
+ * UIManager V2 - Sistema de inyección en DOM nativo
+ * 
+ * En lugar de crear un overlay separado con position:fixed, este sistema
+ * inyecta elementos directamente en la estructura DOM existente de Undercards:
+ * 
+ * Estructura DOM de Undercards:
+ *   #phase2
+ *     ├── table.profile (enemy) ← Arriba del board
+ *     ├── #board                ← Tablero de juego
+ *     ├── table.profile (player) ← Debajo del board
+ *     └── .timer                ← Timer del turno
+ * 
+ * Nuevo enfoque de inyección:
+ *   #phase2
+ *     ├── .tv-opponent-info    ← INYECTADO antes del board
+ *     ├── table.profile (enemy) ← Puede ser oculto o estilizado
+ *     ├── #board                ← Tablero (sin cambios)
+ *     ├── table.profile (player) ← Puede ser oculto o estilizado
+ *     ├── .tv-player-info      ← INYECTADO después del profile del jugador
+ *     └── .timer                ← Timer nativo (puede ser estilizado)
+ * 
+ * Elementos flotantes (position: fixed):
+ *   - .tv-center-info (turno/timer) - arriba centrado
+ *   - .tv-action-log - panel lateral derecho
+ *   - .tv-log-float-toggle - botón para toggle del log
+ *   - .tv-notification - notificaciones flotantes
+ */
 class UIManager {
     constructor() {
-        this.container = null;
-        this.elements = {};
+        this.container = null;          // Contenedor wrapper (para elementos que necesitan uno)
+        this.elements = {};             // Referencias a elementos del DOM
+        this.injectedElements = [];     // Lista de elementos inyectados para limpieza
     }
 
+    /**
+     * Inicializa la UI inyectando elementos en el DOM existente
+     */
     initialize() {
-        // Crear contenedor principal
+        console.log('[TournamentView] Inicializando UI V2 (inyección en DOM)...');
+        
+        // Crear un contenedor mínimo solo para elementos flotantes
         this.container = document.createElement('div');
         this.container.id = 'uc-tournament-view';
+        this.container.style.pointerEvents = 'none';
         document.body.appendChild(this.container);
-
-        // Crear elementos de UI
+        
+        // Esperar a que el DOM del juego esté listo
+        this.waitForGameDOM().then(() => {
+            // Inyectar paneles de jugadores en el DOM del juego
+            this.injectPlayerPanels();
+            
+            // Crear elementos flotantes (turno, timer, action log)
+            this.createCenterInfo();
+            this.createActionLog();
+            
+            // Mostrar notificación de prueba si está activada
+            this.checkTestNotification();
+            
+            console.log('[TournamentView] UI V2 inicializada correctamente');
+        }).catch(err => {
+            console.error('[TournamentView] Error esperando DOM del juego:', err);
+            // Fallback: crear UI flotante tradicional
+            this.createFallbackUI();
+            
+            // Mostrar notificación de prueba si está activada (incluso en fallback)
+            this.checkTestNotification();
+        });
+    }
+    
+    /**
+     * Verifica si la notificación de prueba debe mostrarse
+     */
+    checkTestNotification() {
+        const showTest = testNotificationSetting.value();
+        if (showTest) {
+            // Calcular offset basado en notificaciones existentes (excluyendo la de prueba)
+            const existingNotifications = document.querySelectorAll('.tv-notification:not(#tv-test-notification)');
+            const offset = existingNotifications.length * 40;
+            
+            // Mostrar notificación de prueba persistente
+            const testNotif = document.createElement('div');
+            testNotif.id = 'tv-test-notification';
+            testNotif.className = 'tv-notification tv-notification-info';
+            testNotif.innerHTML = '🧪 Notificación de Prueba - Esta notificación permanece en pantalla';
+            testNotif.style.cssText = `
+                position: fixed !important;
+                top: ${425 + offset}px !important;
+                left: 19% !important;
+                transform: translateX(-50%) !important;
+                z-index: 10000 !important;
+                pointer-events: auto !important;
+            `;
+            
+            // Remover notificación anterior si existe
+            const oldNotif = document.getElementById('tv-test-notification');
+            if (oldNotif) oldNotif.remove();
+            
+            document.body.appendChild(testNotif);
+            console.log('[TournamentView] 🧪 Notificación de prueba mostrada en initialize');
+        }
+    }
+    
+    /**
+     * Espera a que el DOM del juego (#phase2, #board) esté disponible
+     */
+    waitForGameDOM(timeout = 10000) {
+        return new Promise((resolve, reject) => {
+            const startTime = Date.now();
+            
+            const check = () => {
+                const phase2 = document.querySelector('#phase2');
+                const board = document.querySelector('#board');
+                
+                if (phase2 && board) {
+                    console.log('[TournamentView] DOM del juego encontrado');
+                    resolve({ phase2, board });
+                    return;
+                }
+                
+                if (Date.now() - startTime > timeout) {
+                    reject(new Error('Timeout esperando DOM del juego'));
+                    return;
+                }
+                
+                // Reintentar en 100ms
+                setTimeout(check, 100);
+            };
+            
+            check();
+        });
+    }
+    
+    /**
+     * Inyecta los paneles de jugador y oponente en el DOM del juego
+     */
+    injectPlayerPanels() {
+        const phase2 = document.querySelector('#phase2');
+        const board = document.querySelector('#board');
+        
+        if (!phase2 || !board) {
+            console.error('[TournamentView] No se encontró #phase2 o #board');
+            return;
+        }
+        
+        // Buscar las tablas de perfil nativas
+        const profiles = phase2.querySelectorAll('table.profile');
+        const enemyProfile = profiles[0]; // Primera = oponente (arriba)
+        const playerProfile = profiles[1]; // Segunda = jugador (abajo)
+        
+        console.log('[TournamentView] Perfiles encontrados:', profiles.length);
+        
+        // ===== PANEL DEL OPONENTE (antes del board) =====
+        const opponentPanel = this.createOpponentPanel();
+        
+        // Inyectar ANTES del board (después del enemyProfile si existe)
+        if (enemyProfile && enemyProfile.nextSibling) {
+            phase2.insertBefore(opponentPanel, board);
+        } else {
+            phase2.insertBefore(opponentPanel, board);
+        }
+        this.injectedElements.push(opponentPanel);
+        console.log('[TournamentView] Panel de oponente inyectado antes del board');
+        
+        // ===== PANEL DEL JUGADOR (después del board) =====
+        const playerPanel = this.createPlayerPanel();
+        
+        // Inyectar DESPUÉS del playerProfile (o después del board si no hay profile)
+        if (playerProfile && playerProfile.nextSibling) {
+            phase2.insertBefore(playerPanel, playerProfile.nextSibling);
+        } else if (playerProfile) {
+            // Si playerProfile es el último, appendChild
+            phase2.appendChild(playerPanel);
+        } else {
+            // No hay profiles, inyectar después del board
+            if (board.nextSibling) {
+                phase2.insertBefore(playerPanel, board.nextSibling);
+            } else {
+                phase2.appendChild(playerPanel);
+            }
+        }
+        this.injectedElements.push(playerPanel);
+        console.log('[TournamentView] Panel de jugador inyectado después del board');
+    }
+    
+    /**
+     * Crea el panel de información del oponente
+     */
+    createOpponentPanel() {
+        const panel = document.createElement('div');
+        panel.className = 'tv-opponent-info';
+        panel.innerHTML = `
+            <div class="tv-player-name" data-player="opponent">Opponent</div>
+            <div class="tv-player-soul">
+                <div class="tv-soul-text" data-soul="opponent">-</div>
+            </div>
+            <div class="tv-player-hp">
+                <div class="tv-hp-bar">
+                    <div class="tv-hp-fill" data-hp-bar="opponent" style="width: 100%"></div>
+                </div>
+                <div class="tv-hp-text" data-hp-text="opponent">30/30</div>
+            </div>
+            <div class="tv-player-gold">
+                <div class="tv-gold-text" data-gold="opponent">0 G</div>
+            </div>
+            <div class="tv-player-artifacts">
+                <div class="tv-artifacts-text" data-artifacts="opponent">-</div>
+            </div>
+            <div class="tv-player-cards">
+                <div class="tv-card-counter">
+                    <div class="tv-card-counter-label">${i18n.t('ui.hand')}</div>
+                    <div class="tv-card-counter-value" data-hand="opponent">0</div>
+                </div>
+                <div class="tv-card-counter">
+                    <div class="tv-card-counter-label">${i18n.t('ui.deck')}</div>
+                    <div class="tv-card-counter-value" data-deck="opponent">0</div>
+                </div>
+                <div class="tv-card-counter">
+                    <div class="tv-card-counter-label">${i18n.t('ui.graveyard')}</div>
+                    <div class="tv-card-counter-value" data-graveyard="opponent">0</div>
+                </div>
+            </div>
+        `;
+        
+        // Guardar referencias
+        this.elements.opponentName = panel.querySelector('[data-player="opponent"]');
+        this.elements.opponentSoul = panel.querySelector('[data-soul="opponent"]');
+        this.elements.opponentHpBar = panel.querySelector('[data-hp-bar="opponent"]');
+        this.elements.opponentHpText = panel.querySelector('[data-hp-text="opponent"]');
+        this.elements.opponentGold = panel.querySelector('[data-gold="opponent"]');
+        this.elements.opponentArtifacts = panel.querySelector('[data-artifacts="opponent"]');
+        this.elements.opponentHand = panel.querySelector('[data-hand="opponent"]');
+        this.elements.opponentDeck = panel.querySelector('[data-deck="opponent"]');
+        this.elements.opponentGraveyard = panel.querySelector('[data-graveyard="opponent"]');
+        this.elements.opponentPanel = panel;
+        
+        return panel;
+    }
+    
+    /**
+     * Crea el panel de información del jugador
+     */
+    createPlayerPanel() {
+        const panel = document.createElement('div');
+        panel.className = 'tv-player-info';
+        panel.innerHTML = `
+            <div class="tv-player-name" data-player="player">Player</div>
+            <div class="tv-player-soul">
+                <div class="tv-soul-text" data-soul="player">-</div>
+            </div>
+            <div class="tv-player-hp">
+                <div class="tv-hp-bar">
+                    <div class="tv-hp-fill" data-hp-bar="player" style="width: 100%"></div>
+                </div>
+                <div class="tv-hp-text" data-hp-text="player">30/30</div>
+            </div>
+            <div class="tv-player-gold">
+                <div class="tv-gold-text" data-gold="player">0 G</div>
+            </div>
+            <div class="tv-player-artifacts">
+                <div class="tv-artifacts-text" data-artifacts="player">-</div>
+            </div>
+            <div class="tv-player-cards">
+                <div class="tv-card-counter">
+                    <div class="tv-card-counter-label">${i18n.t('ui.hand')}</div>
+                    <div class="tv-card-counter-value" data-hand="player">0</div>
+                </div>
+                <div class="tv-card-counter">
+                    <div class="tv-card-counter-label">${i18n.t('ui.deck')}</div>
+                    <div class="tv-card-counter-value" data-deck="player">0</div>
+                </div>
+                <div class="tv-card-counter">
+                    <div class="tv-card-counter-label">${i18n.t('ui.graveyard')}</div>
+                    <div class="tv-card-counter-value" data-graveyard="player">0</div>
+                </div>
+            </div>
+        `;
+        
+        // Guardar referencias
+        this.elements.playerName = panel.querySelector('[data-player="player"]');
+        this.elements.playerSoul = panel.querySelector('[data-soul="player"]');
+        this.elements.playerHpBar = panel.querySelector('[data-hp-bar="player"]');
+        this.elements.playerHpText = panel.querySelector('[data-hp-text="player"]');
+        this.elements.playerGold = panel.querySelector('[data-gold="player"]');
+        this.elements.playerArtifacts = panel.querySelector('[data-artifacts="player"]');
+        this.elements.playerHand = panel.querySelector('[data-hand="player"]');
+        this.elements.playerDeck = panel.querySelector('[data-deck="player"]');
+        this.elements.playerGraveyard = panel.querySelector('[data-graveyard="player"]');
+        this.elements.playerPanel = panel;
+        
+        return panel;
+    }
+    
+    /**
+     * Crea el indicador central de turno/timer (flotante)
+     */
+    createCenterInfo() {
+        const centerInfo = document.createElement('div');
+        centerInfo.className = 'tv-center-info';
+        centerInfo.innerHTML = `
+            <div class="tv-turn-indicator">
+                <div class="tv-turn-label">${i18n.t('ui.turn')}</div>
+                <div class="tv-turn-number" data-turn>0</div>
+                <div class="tv-turn-timer" data-timer>-</div>
+            </div>
+        `;
+        
+        // Añadir al contenedor flotante
+        this.container.appendChild(centerInfo);
+        this.injectedElements.push(centerInfo);
+        
+        // Guardar referencias
+        this.elements.turnNumber = centerInfo.querySelector('[data-turn]');
+        this.elements.turnTimer = centerInfo.querySelector('[data-timer]');
+        this.elements.centerInfo = centerInfo;
+    }
+    
+    /**
+     * UI de fallback si el DOM del juego no está disponible
+     * (usa el sistema antiguo con position:fixed)
+     */
+    createFallbackUI() {
+        console.warn('[TournamentView] Usando UI de fallback (flotante)');
         this.createHeader();
         this.createActionLog();
-        
-        console.log('[TournamentView] UI inicializada');
     }
 
     showFloatingNotification(message, type = 'info', duration = 3000) {
@@ -2639,10 +2939,10 @@ class UIManager {
         notification.className = `tv-notification tv-notification-${type}`;
         notification.textContent = message;
         
-        // Calcular posición basada en notificaciones existentes
+        // Calcular posición basada en notificaciones existentes (40px offset por cada una)
         const existingNotifications = document.querySelectorAll('.tv-notification');
-        const offset = existingNotifications.length * 60; // 60px por notificación
-        notification.style.top = `${90 + offset}px`;
+        const offset = existingNotifications.length * 40;
+        notification.style.cssText = `top: ${425 + offset}px !important;`;
         
         document.body.appendChild(notification);
         
@@ -3220,8 +3520,9 @@ class UIManager {
     }
 
     updateActivePlayer() {
-        const playerInfo = this.container.querySelector('.tv-player-info');
-        const opponentInfo = this.container.querySelector('.tv-opponent-info');
+        // Buscar paneles - pueden estar inyectados en el DOM o en el container
+        const playerInfo = this.elements.playerPanel || document.querySelector('.tv-player-info');
+        const opponentInfo = this.elements.opponentPanel || document.querySelector('.tv-opponent-info');
         
         console.log('[TournamentView] updateActivePlayer - Player ID:', gameState.player.id, 'Opponent ID:', gameState.opponent.id, 'Current:', gameState.currentPlayer);
         
@@ -3280,6 +3581,18 @@ class UIManager {
     }
 
     destroy() {
+        // Remover elementos inyectados en el DOM
+        if (this.injectedElements && this.injectedElements.length > 0) {
+            this.injectedElements.forEach(element => {
+                if (element && element.parentNode) {
+                    element.remove();
+                }
+            });
+            this.injectedElements = [];
+            console.log('[TournamentView] Elementos inyectados removidos');
+        }
+        
+        // Remover contenedor principal
         if (this.container && this.container.parentNode) {
             this.container.remove();
         }
@@ -3395,6 +3708,51 @@ const languageSetting = plugin.settings().add({
             // Si hay una partida activa, actualizar todos los datos
             if (gameState.isActive) {
                 uiManager.update();
+            }
+        }
+    }
+});
+
+// Setting para notificación de prueba (persistente)
+const testNotificationSetting = plugin.settings().add({
+    key: 'testNotification',
+    name: '🧪 Mostrar Notificación de Prueba',
+    description: 'Activa para mostrar una notificación de prueba que permanece en pantalla',
+    type: 'boolean',
+    default: false,
+    category: 'Desarrollo',
+    onChange: (newValue) => {
+        if (newValue && uiManager.container) {
+            // Calcular offset basado en notificaciones existentes (excluyendo la de prueba)
+            const existingNotifications = document.querySelectorAll('.tv-notification:not(#tv-test-notification)');
+            const offset = existingNotifications.length * 40;
+            
+            // Mostrar notificación de prueba persistente
+            const testNotif = document.createElement('div');
+            testNotif.id = 'tv-test-notification';
+            testNotif.className = 'tv-notification tv-notification-info';
+            testNotif.innerHTML = '🧪 Notificación de Prueba - Esta notificación permanece en pantalla';
+            testNotif.style.cssText = `
+                position: fixed !important;
+                top: ${425 + offset}px !important;
+                left: 19% !important;
+                transform: translateX(-50%) !important;
+                z-index: 10000 !important;
+                pointer-events: auto !important;
+            `;
+            
+            // Remover notificación anterior si existe
+            const oldNotif = document.getElementById('tv-test-notification');
+            if (oldNotif) oldNotif.remove();
+            
+            document.body.appendChild(testNotif);
+            console.log('[TournamentView] 🧪 Notificación de prueba mostrada');
+        } else {
+            // Remover notificación de prueba
+            const testNotif = document.getElementById('tv-test-notification');
+            if (testNotif) {
+                testNotif.remove();
+                console.log('[TournamentView] 🧪 Notificación de prueba removida');
             }
         }
     }
@@ -4402,7 +4760,7 @@ plugin.events.on('getCardBoard', (data) => {
         console.log(`[TournamentView] ${playerName} jugó: ${card.name}`);
         
         // Notificación
-        uiManager.showFloatingNotification(`${playerName} jugó ${card.name}`, 'card', 3000);
+        uiManager.showFloatingNotification(i18n.t('notif.cardPlayed', { player: playerName, card: card.name }), 'card', 3000);
     } catch (error) {
         console.error('[TournamentView] Error parseando carta:', error);
     }
@@ -4418,7 +4776,7 @@ plugin.events.on('getSpellPlayed', (data) => {
         console.log(`[TournamentView] ${playerName} usó hechizo: ${card.name}`);
         
         // Notificación
-        uiManager.showFloatingNotification(`${playerName} usó ${card.name}`, 'spell', 3000);
+        uiManager.showFloatingNotification(i18n.t('notif.spellCast', { player: playerName, spell: card.name }), 'spell', 3000);
     } catch (error) {
         console.error('[TournamentView] Error parseando hechizo:', error);
     }
@@ -4431,7 +4789,7 @@ plugin.events.on('getMonsterDestroyed', (data) => {
     console.log('[TournamentView] Monstruo destruido, ID:', data.monsterId);
     
     // Notificación
-    uiManager.showFloatingNotification('Monstruo destruido', 'damage', 2000);
+    uiManager.showFloatingNotification(i18n.t('notif.monsterDestroyed', { monster: '' }), 'damage', 2000);
 });
 
 // Evento: Actualización del alma
@@ -4466,7 +4824,7 @@ plugin.events.on('Log:ARTIFACT_EFFECT', (data) => {
         console.log(`[TournamentView] ${playerName} activó artefacto: ${artifactName}`);
         
         // Notificación
-        uiManager.showFloatingNotification(`${playerName} activó ${artifactName}`, 'artifact', 3000);
+        uiManager.showFloatingNotification(i18n.t('notif.artifactActivated', { artifact: `${playerName} - ${artifactName}` }), 'artifact', 3000);
         
         // Agregar efecto glow al artefacto si se puede encontrar
         if (data.artifactActor && data.artifactActor.id) {
@@ -4500,7 +4858,7 @@ plugin.events.on('Log:SOUL_EFFECT', (data) => {
         console.log(`[TournamentView] ${playerName} activó efecto del alma: ${soulName}`);
         
         // Notificación
-        uiManager.showFloatingNotification(`${playerName} activó efecto de alma`, 'info', 2500);
+        uiManager.showFloatingNotification(i18n.t('notif.soulEffect', { soul: `${playerName} - ${soulName}` }), 'info', 2500);
         
         // Agregar efecto glow al alma
         const soulSelector = isPlayer ? '[data-player-soul]' : '[data-opponent-soul]';
